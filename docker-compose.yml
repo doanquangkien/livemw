@@ -1,0 +1,23 @@
+services:
+  nginx-rtmp:
+    build:
+      context: ./nginx-rtmp
+      dockerfile: Dockerfile
+    container_name: nginx-rtmp
+    restart: always
+    ports:
+      - "1935:1935"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - hls-temp:/tmp/hls
+      - nginx-logs:/var/log/nginx
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.hls.rule=Host(`live.mecwish.com`) && PathPrefix(`/hls`)
+      - traefik.http.routers.hls.entrypoints=websecure
+      - traefik.http.routers.hls.tls=true
+      - traefik.http.services.hls.loadbalancer.server.port=8080
+
+volumes:
+  hls-temp:
+  nginx-logs:
