@@ -14,7 +14,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY transcode.sh /usr/local/bin/transcode.sh
 RUN chmod +x /usr/local/bin/transcode.sh
 
-RUN mkdir -p /tmp/hls && chown www-data:www-data /tmp/hls
+RUN mkdir -p /tmp/hls && chown www-data:www-data /tmp/hls && touch /tmp/hls/exec.log && chown www-data:www-data /tmp/hls/exec.log
 
 EXPOSE 1935 8088
 
