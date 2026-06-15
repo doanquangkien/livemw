@@ -1,9 +1,9 @@
 #!/bin/sh
-# HLS transcode script called by nginx-rtmp exec_push directive
-# Stream data arrives on stdin as FLV — must run FOREGROUND
+# HLS transcode script called by nginx-rtmp exec directive
+# Uses explicit IPv4 to avoid ::1 localhost resolution issue
 NAME=$1
 echo "PUBLISH $NAME at $(date)" >> /tmp/hls/exec.log
-exec ffmpeg -nostats -i pipe:0 \
+ffmpeg -nostdin -nostats -i rtmp://127.0.0.1/live/$NAME \
   -c:v libx264 -preset veryfast -tune zerolatency \
   -sc_threshold 0 -g 48 -keyint_min 48 \
   -b:v 2500k -maxrate 2500k -bufsize 5000k \
@@ -13,4 +13,4 @@ exec ffmpeg -nostats -i pipe:0 \
   -hls_flags delete_segments+append_list -hls_segment_type mpegts \
   -hls_segment_filename /tmp/hls/${NAME}_%03d.ts \
   /tmp/hls/${NAME}.m3u8 \
-  2>>/tmp/hls/ffmpeg-${NAME}.log
+  2>>/tmp/hls/ffmpeg-${NAME}.log < /dev/null &
