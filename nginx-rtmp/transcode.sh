@@ -1,6 +1,5 @@
 #!/bin/sh
-# HLS transcode script called by nginx-rtmp exec directive
-# Uses explicit IPv4 to avoid ::1 localhost resolution issue
+# HLS transcode script — Phase 1 (not used in Phase 0 built-in HLS)
 NAME=$1
 echo "PUBLISH $NAME at $(date)" >> /tmp/hls/exec.log
 ffmpeg -nostdin -nostats -i rtmp://127.0.0.1/live/$NAME \
