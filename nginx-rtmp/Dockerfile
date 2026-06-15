@@ -14,8 +14,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY transcode.sh /usr/local/bin/transcode.sh
 RUN chmod +x /usr/local/bin/transcode.sh
 
-RUN mkdir -p /tmp/hls && chown www-data:www-data /tmp/hls && touch /tmp/hls/exec.log && chown www-data:www-data /tmp/hls/exec.log
+RUN mkdir -p /tmp/hls
 
 EXPOSE 1935 8088
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
