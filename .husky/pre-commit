@@ -1,0 +1,79 @@
+echo "========================================"
+echo "🛡️  AGENTS PRE-COMMIT CHECK 🛡️"
+echo "========================================"
+
+# Check if .env exists but is not gitignored
+if [ -f ".env" ]; then
+    if ! git check-ignore -q .env; then
+        echo "❌ LỖI NGHIÊM TRỌNG: File .env đang bị theo dõi bởi git!"
+        echo "   Vui lòng thêm .env vào .gitignore và chạy lệnh:"
+        echo "   git rm --cached .env"
+        echo "   Commit bị từ chối."
+        exit 1
+    fi
+fi
+
+# Hard block for typical secrets (exclude .husky and TEMPLATES from the diff)
+if git diff --cached --name-only | grep -vE '(\.husky/|TEMPLATES/)' | xargs -r -I {} git diff --cached -- {} | grep -iE 'AKIA[0-9A-Z]{16}|BEGIN RSA PRIVATE KEY|password\s*=\s*['"'"'"][^'"'"'"]+['"'"'"]'; then
+    echo "❌ LỖI BẢO MẬT: Phát hiện mã bí mật (secrets/keys) trong file sắp commit!"
+    echo "   Bạn đã chạy lệnh /security-scan chưa?"
+    echo "   Commit bị từ chối."
+    exit 1
+fi
+
+# Anti-Any (TypeScript Strict Mode)
+if git diff --cached --name-only | grep -E '\.(ts|tsx)$' | grep -v '\.husky/' | xargs -r -I {} git diff --cached -- {} | grep -E '^\+.*(: any|as any)'; then
+    echo "❌ LỖI CLEAN CODE: Phát hiện sử dụng type 'any' trong TypeScript!"
+    echo "   Dự án này cấm dùng 'any'. Vui lòng định nghĩa type cụ thể."
+    echo "   Commit bị từ chối."
+    exit 1
+fi
+
+# ----------------------------------------
+# Kiểm tra Hashtag Capillary (Bắt buộc tiêm tag)
+# ----------------------------------------
+missing_tags=0
+for file in $(git diff --cached --name-only | grep -E '\.md$' | grep -v -E '(\.husky/|HASHTAG-DICTIONARY\.md|TEMPLATES/)'); do
+    if [ -f "$file" ]; then
+        if ! head -n 5 "$file" | grep -qiE "(@tags|tags:)"; then
+            echo "   👉 Thiếu tag: $file"
+            missing_tags=1
+        fi
+    fi
+done
+
+if [ "$missing_tags" -eq 1 ]; then
+    echo "❌ LỖI ĐỊNH TUYẾN: Phát hiện file thiếu Hashtag Capillary!"
+    echo "   Bạn (hoặc Agent) vừa tạo/sửa file nhưng quên gắn Hashtag định tuyến."
+    echo "   Vui lòng thêm 'tags: [...]' vào 1 trong 5 dòng đầu tiên."
+    echo "   Tham khảo từ điển tại: AGENTS/WORKFLOW/HASHTAG-DICTIONARY.md"
+    echo "   Commit bị từ chối."
+    exit 1
+fi
+
+# ----------------------------------------
+# Kiểm tra số lượng dòng (Rule: < 300 lines)
+# ----------------------------------------
+oversized_files=0
+for file in $(git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx|rs|css)$' | grep -v '\.husky/'); do
+    if [ -f "$file" ]; then
+        line_count=$(wc -l < "$file")
+        if [ "$line_count" -gt 300 ]; then
+            echo "   ❌ File quá dài ($line_count dòng): $file"
+            oversized_files=1
+        fi
+    fi
+done
+
+if [ "$oversized_files" -eq 1 ]; then
+    echo "❌ LỖI CLEAN CODE: Phát hiện file vượt quá định mức 300 dòng!"
+    echo "   Dự án này tuân thủ chặt chẽ AGENTS Manifesto: mọi file code KHÔNG ĐƯỢC QUÁ 300 dòng."
+    echo "   Vui lòng tiến hành Refactor: Tách component, chia module, hoặc đưa logic ra custom hook."
+    echo "   Commit bị từ chối."
+    exit 1
+fi
+
+echo "✅ Kiểm tra bảo mật cơ bản: PASS"
+echo "⚠️  LỜI NHẮC TRƯỚC KHI NGHỈ: Đừng quên cập nhật file [Host-Root]/.agents/handoff.md sau commit này!"
+echo "========================================"
+exit 0
