@@ -12,4 +12,4 @@ ffmpeg -i rtmp://localhost/live/$NAME \
   -hls_flags delete_segments+append_list -hls_segment_type mpegts \
   -hls_segment_filename /tmp/hls/${NAME}_%03d.ts \
   /tmp/hls/${NAME}.m3u8 \
-  2>>/var/log/nginx/ffmpeg-${NAME}.log &
+  2>>/tmp/hls/ffmpeg-${NAME}.log &
