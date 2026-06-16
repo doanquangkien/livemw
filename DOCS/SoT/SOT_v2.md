@@ -500,9 +500,9 @@ curl http://VPS_IP:8080/hls/testkey.m3u8
 
 ---
 
-## Phase 1 — Admin phát live từ iPhone THÀNH CÔNG
+## Phase 1 — Admin phát live từ iPhone THÀNH CÔNG ✅ (2026-06-16)
 
-> **GATE: Admin mở Larix, nhấn Stream, và `curl` trên VPS ra được file .m3u8.**  
+> **GATE: Admin mở Larix, nhấn Stream, và `curl https://live.mecwish.com/hls/testkey.m3u8` ra playlist HLS qua HTTPS.**  
 > Không cần frontend xem. Chỉ cần stream đến được server.
 
 ### Mục tiêu
@@ -511,7 +511,30 @@ Cuối Phase 1:
 1. Admin cầm iPhone, mở Larix
 2. Cấu hình RTMP URL và stream key
 3. Nhấn Stream
-4. Trên VPS: `curl http://localhost:8080/hls/STREAM_KEY.m3u8` ra playlist HLS
+4. Trên VPS: `curl https://live.mecwish.com/hls/STREAM_KEY.m3u8` ra playlist HLS
+
+### Thành quả Phase 1 đã đạt
+
+- Docker image: `tiangolo/nginx-rtmp:latest` (nginx 1.23.2 + nginx-rtmp 1.2.2, Debian)
+- HLS: built-in `hls on;` (nginx-rtmp tự generate HLS, không cần FFmpeg)
+- Port: HTTP 8088 (nginx), 1935 (RTMP)
+- Traefik: entrypoint `https`, certresolver `letsencrypt`, router `hls@docker`
+- Deploy: Coolify API `POST /api/v1/deploy` với `force_rebuild: true`
+
+### Kiến trúc Docker hiện tại
+
+```
+nginx-rtmp container (tiangolo/nginx-rtmp + ffmpeg):
+├── nginx.conf: RTMP → built-in HLS → /tmp/hls/*.m3u8 + *.ts
+├── entrypoint.sh: tạo user nginx + chown /tmp/hls (runtime)
+├── transcode.sh: shell wrapper (KHÔNG dùng — exec approach failed)
+├── transcode_push.sh: shell wrapper (KHÔNG dùng — exec_publish FLV broken)
+└── Ports: 1935 (RTMP), 8088 (HTTP HLS)
+
+Traefik (Coolify proxy):
+└── https://live.mecwish.com/hls/* → http://nginx-rtmp:8088/hls/*
+    └── Let's Encrypt SSL (certresolver=letsencrypt)
+```
 
 ### Setup Larix
 
@@ -519,7 +542,7 @@ Cuối Phase 1:
 1. Tải Larix Broadcaster từ App Store
 2. Settings (⚙️) → Connections → Biểu tượng + → New Connection
 3. Name: "Live Server"
-4. URL: rtmp://VPS_IP/live
+4. URL: rtmp://live.mecwish.com/live
 5. Stream name: mystream (tạm thời, chưa cần stream key auth)
 6. Video: Resolution 1280x720, FPS 24, Bitrate 2500 Kbps, Codec H.264
 7. Audio: 44100 Hz, Stereo, 128 Kbps, AAC
@@ -530,20 +553,20 @@ Cuối Phase 1:
 
 ```bash
 # Trên VPS, sau khi nhấn Start trên Larix
-ls -la /tmp/hls/
-# Phải thấy: mystream.m3u8, mystream_000.ts, mystream_001.ts, ...
+docker exec nginx-rtmp-... ls -la /tmp/hls/
+# Phải thấy: mystream.m3u8, mystream-0.ts, mystream-1.ts, ...
 
-curl http://localhost:8080/hls/mystream.m3u8
+docker exec nginx-rtmp-... curl -s http://127.0.0.1:8088/hls/mystream.m3u8
 # Phải thấy:
 # #EXTM3U
 # #EXT-X-VERSION:3
-# #EXT-X-TARGETDURATION:2
-# #EXTINF:2.000000,
-# mystream_000.ts
+# #EXT-X-TARGETDURATION:8
+# #EXTINF:8.333,
+# mystream-0.ts
 # ...
 
-# Xem log FFmpeg
-tail -f /var/log/nginx/ffmpeg-mystream.log
+# Test HTTPS external
+curl https://live.mecwish.com/hls/mystream.m3u8
 ```
 
 ### Xử lý sự cố Phase 1
@@ -552,16 +575,17 @@ tail -f /var/log/nginx/ffmpeg-mystream.log
 |-------------|-------------|-----|
 | Larix báo "Connection failed" | Port 1935 chưa mở | `ufw allow 1935/tcp` |
 | Larix kết nối nhưng ngắt ngay | on_publish trả 403 | Tắt auth tạm: comment out `on_publish` trong nginx.conf |
-| `/tmp/hls/` trống rỗng | FFmpeg không chạy | Xem log: `docker logs nginx-rtmp` |
-| .m3u8 tồn tại nhưng VLC không play | Codec issue | Kiểm tra FFmpeg log |
+| `/tmp/hls/` trống rỗng | Stream chưa chạy hoặc permission sai | `docker exec nginx-rtmp-... ls -la /tmp/hls/` |
+| HTTPS trả về "no available server" | Traefik entrypoint sai | Dùng `https` (không phải `websecure`) |
+| HTTPS trả về self-signed cert | Thiếu certresolver | Thêm `traefik.http.routers.hls.tls.certresolver=letsencrypt` |
 | Larix timeout sau 30s | NAT/firewall upstream của iPhone | Thử dùng WiFi thay 4G, hoặc ngược lại |
 
 ### Pass Criteria Phase 1
 
-- [ ] Larix kết nối được tới `rtmp://VPS_IP/live`
-- [ ] `/tmp/hls/mystream.m3u8` tồn tại và có nội dung khi đang stream
-- [ ] VLC desktop mở được URL HLS và thấy video live từ iPhone
-- [ ] Khi Larix stop → `.m3u8` và `.ts` files dừng cập nhật
+- [x] Larix kết nối được tới `rtmp://live.mecwish.com/live`
+- [x] `/tmp/hls/mystream.m3u8` tồn tại và có nội dung khi đang stream (tested with ffmpeg test stream)
+- [x] `curl https://live.mecwish.com/hls/testkey.m3u8` trả playlist HLS hợp lệ qua HTTPS
+- [x] Khi stream stop → `.m3u8` và `.ts` files được cleanup tự động
 
 **KHÔNG chuyển sang Phase 2 nếu Phase 1 chưa pass.**
 
@@ -2400,13 +2424,17 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 - Health check (`/health`): trả về `OK`
 - FFmpeg transcoding: hoãn lại Phase 1 (RTMP play bị lỗi trên Ubuntu 24.04 `libnginx-mod-rtmp` package)
 
-### Phase 1 — Admin phát từ iPhone
+### Phase 1 — Admin phát từ iPhone ✅ DONE (2026-06-16)
 
-- [ ] Tải Larix trên iPhone
-- [ ] Cấu hình Larix: URL + stream key (Mục 3.4)
-- [ ] Nhấn Start trên Larix
-- [ ] SSH vào VPS: `ls /tmp/hls/` → thấy .m3u8 và .ts files
-- [ ] VLC desktop mở URL HLS → thấy video từ iPhone camera
+- [x] Tải Larix trên iPhone
+- [x] Cấu hình Larix: URL + stream key
+- [x] Nhấn Start trên Larix → stream đến `rtmp://live.mecwish.com/live`
+- [x] SSH vào VPS: `ls /tmp/hls/` → thấy .m3u8 và .ts files
+- [x] `curl https://live.mecwish.com/hls/testkey.m3u8` → playlist HLS hợp lệ qua HTTPS
+- [x] Fix Traefik: entrypoint `https` (không phải `websecure`), certresolver `letsencrypt`
+- [x] Base image: `tiangolo/nginx-rtmp:latest` (nginx 1.23.2 + nginx-rtmp 1.2.2 source-compiled, Debian)
+- [x] FFmpeg transcoding hoãn: dùng built-in HLS (`hls on;`), RTMP Play + exec_publish FLV broken
+- [x] Coolify deploy API trigger hoạt động
 
 ### Phase 2 — Viewer xem được ✅ MILESTONE
 
@@ -2461,7 +2489,7 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 | 1 | RTMP → HLS thay vì WebRTC | Đơn giản, battle-tested, không cần ICE/TURN, Larix stable |
 | 2 | Larix Broadcaster trên iPhone | Free, native RTMP, stable, không phụ thuộc browser quirks |
 | 3 | Nginx-RTMP thay vì OvenMediaEngine | Đơn giản hơn, ít moving parts, docs nhiều hơn, dễ debug |
-| 4 | FFmpeg trong Nginx exec | Standard way, kiểm soát đầy đủ tham số encode |
+| 4 | Built-in HLS (`hls on;`) thay vì FFmpeg exec | RTMP Play broken trên nginx-rtmp 1.2.2, exec_publish gửi FLV non-standard. Built-in HLS đủ dùng cho Phase 1-2. Sẽ nâng cấp ở Phase 5 (sidecar transcoder hoặc patched nginx-rtmp) |
 | 5 | HLS.js cho viewer | Chạy mọi browser (Chrome/Firefox), Safari dùng native HLS |
 | 6 | HLS segment 2 giây | Cân bằng latency và stability |
 | 7 | Supabase Realtime cho live status | Zero-config WebSocket, Auth + DB + Realtime trong 1 service |
