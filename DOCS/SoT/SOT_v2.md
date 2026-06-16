@@ -2447,21 +2447,22 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 - [x] Deploy và test: `https://live.mecwish.com/` load được, render HTML Next.js
 - [x] FFmpeg test stream → HLS playlist + TS segments accessible qua HTTPS
 - [x] Frontend hiển thị LivePlayer, kết nối tới HLS URL
-- [ ] Safari iOS → thấy video live (chờ user test)
-- [ ] Larix iPhone → stream thật, viewer xem qua browser (chờ user test)
+- [x] Safari iOS → thấy video live (user đã test)
+- [x] Larix iPhone → stream thật, viewer xem qua browser (user đã test)
 
 > **Kiến trúc Phase 2:** Trang viewer chính đặt tại `/` (root), không phải `/live`. Lý do: Phase 2 minimal — chưa có homepage riêng, chưa có auth. Khi thêm homepage ở Phase 3, có thể chuyển viewer qua `/live`.
 
 ### Phase 3 — Live Status Realtime
 
-- [ ] Tạo Supabase project
-- [ ] Run SQL schema (Mục 16)
-- [ ] Bật Realtime cho bảng `live_sessions` và `comments`
-- [ ] Deploy **Node.js 24** API
-- [ ] Cập nhật `nginx.conf`: bỏ comment `on_publish` và `on_publish_done`
-- [ ] Test: Larix start → API log nhận `on_publish` → Supabase `status = 'live'`
-- [ ] Homepage (`/`) tự hiển thị "🔴 ĐANG LIVE"
-- [ ] Larix stop → Homepage tự về "Chưa có live"
+- [x] Tạo Supabase project (đã có từ trước, env vars trong `.env`)
+- [x] Run SQL schema — bảng `live_sessions` với RLS + Realtime (Mục 16)
+- [x] Bật Realtime cho bảng `live_sessions` (`ALTER PUBLICATION supabase_realtime ADD TABLE`)
+- [x] Deploy API callbacks: **Next.js Route Handlers** (`app/api/on-publish/route.ts`) thay vì Express app riêng
+- [x] Cập nhật `nginx.conf`: `on_publish` và `on_publish_done` → `http://frontend:3000/api/...`
+- [x] Frontend tích hợp `useLiveStatus` hook (Supabase Realtime Postgres Changes)
+- [x] Homepage (`/`) hiển thị badge "LIVE" động với animated red dot
+- [ ] Test end-to-end: Admin stream → homepage tự update → Admin stop → homepage về offline
+- [ ] Larix iPhone real test
 
 ### Phase 4 — Admin Dashboard + Comments
 
@@ -2497,7 +2498,7 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 | 5 | HLS.js cho viewer | Chạy mọi browser (Chrome/Firefox), Safari dùng native HLS |
 | 6 | HLS segment 2 giây | Cân bằng latency và stability |
 | 7 | Supabase Realtime cho live status | Zero-config WebSocket, Auth + DB + Realtime trong 1 service |
-| 8 | Node.js API riêng cho RTMP callbacks | Next.js Route Handler có cold start issue với long-lived connections |
+| 8 | Next.js Route Handlers cho RTMP callbacks | Dùng `app/api/on-publish/route.ts` thay vì Express container riêng — tối ưu docker-compose, không cần container API riêng, giảm cold start |
 | 9 | Viewer ẩn danh (tên + comment) | Friction thấp nhất, không cần signup |
 | 10 | Phase-based deploy: Phase 2 là milestone sống còn | Đảm bảo core flow hoạt động trước khi build features |
 | 11 | HLS qua HTTPS (proxy qua Coolify) | Safari iOS và Chrome chặn mixed content |

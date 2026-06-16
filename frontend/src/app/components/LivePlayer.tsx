@@ -61,7 +61,12 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !hlsUrl) return;
+    if (!video) return;
+
+    if (!hlsUrl) {
+      setState("offline");
+      return;
+    }
 
     let cancelled = false;
     let cleanupRetry: (() => void) | undefined;
