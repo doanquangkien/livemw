@@ -40,6 +40,17 @@ export default function AdminLivePage() {
     }
   }, []);
 
+  const handleForceEnd = useCallback(async () => {
+    if (!confirm("Chắc chắn muốn cưỡng chế kết thúc Live bị kẹt trong Database?")) return;
+    try {
+      const res = await fetch("/api/admin/force-end", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to end");
+      alert("Đã kết thúc Live thành công!");
+    } catch {
+      alert("Lỗi mạng hoặc Server từ chối");
+    }
+  }, []);
+
   return (
     <div className="flex flex-col lg:flex-row h-full bg-gray-950">
       {/* Video monitor */}
@@ -47,19 +58,29 @@ export default function AdminLivePage() {
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-white">Live Monitor</h2>
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium">
-              {isLive ? (
-                <>
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping bg-red-500 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 bg-red-500" />
-                  </span>
-                  <span className="text-red-500 font-bold">LIVE</span>
-                </>
-              ) : (
-                <span className="text-gray-500">OFFLINE</span>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium">
+                {isLive ? (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping bg-red-500 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 bg-red-500" />
+                    </span>
+                    <span className="text-red-500 font-bold">LIVE</span>
+                  </>
+                ) : (
+                  <span className="text-gray-500">OFFLINE</span>
+                )}
+              </span>
+              {isLive && (
+                <button
+                  onClick={handleForceEnd}
+                  className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+                >
+                  Force End
+                </button>
               )}
-            </span>
+            </div>
           </div>
           <LivePlayer ref={playerRef} hlsUrl={isLive ? hlsUrl : ""} />
           {session?.started_at && (
