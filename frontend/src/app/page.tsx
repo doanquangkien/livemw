@@ -104,7 +104,7 @@ export default function LandingPage() {
               </a>
             ) : (
               <div className="text-center">
-                <div className="text-gray-400">
+                <div className="text-gray-400 flex justify-center">
                   <OfflineIcon />
                 </div>
                 <p className="text-sm lg:text-base font-semibold text-white mt-4">
