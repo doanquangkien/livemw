@@ -2461,7 +2461,7 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 - [x] Cập nhật `nginx.conf`: `on_publish` và `on_publish_done` → `http://frontend:3000/api/...`
 - [x] Frontend tích hợp `useLiveStatus` hook (Supabase Realtime Postgres Changes)
 - [x] Homepage (`/`) hiển thị badge "LIVE" động với animated red dot
-- [ ] Test end-to-end: Admin stream → homepage tự update → Admin stop → homepage về offline
+- [x] Test end-to-end: Admin stream → homepage tự update → Admin stop → homepage về offline
 - [ ] Larix iPhone real test
 
 ### Phase 4 — Admin Dashboard + Comments

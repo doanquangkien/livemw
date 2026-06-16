@@ -117,5 +117,5 @@ Query param không ảnh hưởng đến Nginx serve file (nginx bỏ qua khi ma
 | Homepage LIVE badge with animated ping dot | ✅ |
 | Docker build args: `NEXT_PUBLIC_SUPABASE_*` | ✅ |
 | Docker runtime env: `SUPABASE_SERVICE_ROLE_KEY` | ✅ |
-| End-to-end realtime test (FFmpeg simulation) | ⏳ Chờ deploy |
+| End-to-end realtime test (FFmpeg simulation) | ✅ Verified — FFmpeg → nginx on_publish → API → Supabase → Realtime |
 | Larix iPhone real test | ⏳ Chờ user test |
