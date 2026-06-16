@@ -118,4 +118,12 @@ Query param không ảnh hưởng đến Nginx serve file (nginx bỏ qua khi ma
 | Docker build args: `NEXT_PUBLIC_SUPABASE_*` | ✅ |
 | Docker runtime env: `SUPABASE_SERVICE_ROLE_KEY` | ✅ |
 | End-to-end realtime test (FFmpeg simulation) | ✅ Verified — FFmpeg → nginx on_publish → API → Supabase → Realtime |
-| Larix iPhone real test | ⏳ Chờ user test |
+| Larix iPhone real test | ✅ User confirmed — realtime badge + auto-play hoạt động đúng |
+
+---
+
+## Phiên làm việc 2026-06-16 — Kết luận
+
+**Phase 3 GATE PASSED.** Admin bấm "Go Live" trên Larix iPhone → nginx-rtmp gọi `on_publish` → Next.js Route Handler cập nhật Supabase → Realtime Postgres Changes đẩy xuống browser → homepage tự động hiện badge LIVE (animated red dot) + `hls.js` tự load playlist mới. Admin tắt Live → `on_publish_done` → homepage tự về trạng thái OFFLINE. **Toàn bộ flow hoạt động không cần F5/refresh.**
+
+**Không có vấn đề tồn đọng.** Sẵn sàng chuyển sang Phase 4 (Admin Dashboard + Comment System).
