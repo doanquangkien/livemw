@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
 import VodList from "@/app/components/VodList";
 import AboutTab from "@/app/components/AboutTab";
+import ContactTab from "@/app/components/ContactTab";
 
-type Tab = "about" | "replays";
+type Tab = "about" | "replays" | "contact";
 
 function LiveIndicator() {
   return (
@@ -145,14 +146,27 @@ export default function LandingPage() {
           >
             Xem lại
           </button>
+          <button
+            type="button"
+            onClick={() => setTab("contact")}
+            className={`px-6 py-3 text-sm lg:text-base font-semibold transition-colors duration-200 ${
+              tab === "contact"
+                ? "text-white border-b-2 border-white"
+                : "text-gray-500 border-b-2 border-transparent hover:text-gray-300"
+            }`}
+          >
+            Liên hệ
+          </button>
         </div>
 
         {/* Tab content */}
         <div className="min-h-[200px] py-4">
           {tab === "about" ? (
             <AboutTab />
-          ) : (
+          ) : tab === "replays" ? (
             <VodList />
+          ) : (
+            <ContactTab />
           )}
         </div>
       </div>
