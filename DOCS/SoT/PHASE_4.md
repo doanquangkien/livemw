@@ -153,3 +153,96 @@ app/
 | iOS Safari fix: text-base (16px), h-dvh | ✅ |
 | CSS container fullscreen (không native video) | ✅ |
 | Build local thành công | ✅ |
+
+---
+
+# 📋 TỔNG KẾT PHIÊN LÀM VIỆC PHASE 4 (2026-06-16)
+
+## Số liệu
+
+| Mục | Giá trị |
+|-----|--------|
+| Files tạo mới | 15 |
+| Files sửa đổi | 6 |
+| Dòng code thêm | ~1,336 |
+| Bảng DB mới | 2 (comments, banned_ips) |
+| API Routes mới | 4 |
+| Components mới | 2 (LiveChat, ErrorBoundary) |
+| Admin pages | 4 (layout, dashboard, login, live) |
+| Build status | ✅ Pass |
+
+## Kiến trúc đã triển khai
+
+### Route Structure
+```
+/                    → Viewer page (YouTube Mobile: video + chat)
+/admin               → Admin Dashboard overview
+/admin/login         → Admin login (password form)
+/admin/live          → Live Control (video monitor + comment moderation)
+/api/comments        → POST create comment (rate limit, ban check, session validation)
+/api/comments/[id]   → DELETE soft-delete (admin)
+/api/comments/ban    → POST ban IP + bulk delete (admin)
+/api/admin/login     → POST verify password, set httpOnly cookie
+/api/on-publish      → (existing) RTMP callback
+/api/on-publish-done → (existing) RTMP callback
+```
+
+### Database Schema
+```sql
+comments (id UUID PK, session_id UUID FK, user_name TEXT, content TEXT,
+          user_ip TEXT, is_deleted BOOLEAN, created_at TIMESTAMPTZ)
+banned_ips (ip TEXT PK, reason TEXT, created_at TIMESTAMPTZ)
+```
+
+### Authentication Flow
+```
+User POST /api/admin/login { password }
+  → So sánh với ADMIN_PASSWORD env
+  → Hash SHA256(password + ":admin-salt")
+  → Set cookie admin_token=hash (httpOnly, SameSite Lax, 24h)
+
+Middleware (Edge):
+  → Check cookie format (64 char hex)
+  → Redirect /admin/login nếu không hợp lệ
+
+API Routes (Node.js):
+  → verifyAdminCookie() → compare hash with ADMIN_PASSWORD env
+  → 401 nếu không khớp
+```
+
+### Realtime Flow
+```
+Viewer gửi comment → POST /api/comments → INSERT vào Supabase
+  → Postgres Changes CDC broadcast đến tất cả clients
+  → useComments hook nhận INSERT event → append vào list
+  → Auto-scroll xuống dưới
+
+Admin xóa comment → DELETE /api/comments/[id] → UPDATE is_deleted=true
+  → Postgres Changes CDC broadcast UPDATE event
+  → useComments hook nhận UPDATE → filter khỏi list (real-time)
+```
+
+## Các quyết định kiến trúc then chốt
+
+1. **Soft-delete** (is_deleted) thay vì hard DELETE — cho phép Realtime UPDATE events
+2. **IP-based ban** thay vì display_name ban — khó fake hơn
+3. **Hash cookie auth** — không dependency JWT, SHA256 tự implement
+4. **Middleware format-only check** — không phụ thuộc env var trong Edge runtime
+5. **CSS Container Fullscreen** — Fullscreen API trên wrapper div, không native video
+6. **Route Group (admin)** — cô lập admin layout với viewer layout
+
+## Tồn đọng (Deferred)
+
+| Item | Lý do |
+|------|-------|
+| Viewer count polling | Cần parse Nginx RTMP stat XML, không blocking |
+| Admin force-end session | Cần API gọi end stream, không blocking |
+| Admin create session | Cần UI form + stream key management |
+| Middleware → Proxy migration | Next.js 16 deprecation warning, sẽ migrate Phase 5 |
+
+## Commit
+
+```
+39fe622 @ feat: add Phase 4 — Admin Dashboard + Comment System (Realtime)
+22 files changed, 1,336 insertions(+), 68 deletions(-)
+```
