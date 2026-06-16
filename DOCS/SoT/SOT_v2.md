@@ -1141,14 +1141,19 @@ export function useComments(sessionId: string) {
 
 ### Pass Criteria Phase 4
 
-- [ ] Admin đăng nhập được bằng email/password
-- [ ] Admin tạo được live session với title + stream key
-- [ ] Dashboard hiển thị trạng thái session hiện tại
-- [ ] Viewer count cập nhật mỗi 10 giây
-- [ ] Viewer gửi được comment, xuất hiện realtime
-- [ ] Admin xóa được comment
-- [ ] Admin block được display_name
-- [ ] Admin có thể end session thủ công (khi cần force-stop)
+- [x] Admin đăng nhập được bằng password (hash-based cookie, check với ADMIN_PASSWORD env)
+- [x] Dashboard hiển thị trạng thái session hiện tại (Live Monitor)
+- [x] Viewer gửi được comment, xuất hiện realtime (Postgres Changes CDC)
+- [x] Admin xóa được comment (soft-delete via is_deleted)
+- [x] Admin ban được IP (banned_ips table + bulk delete)
+- [x] Rate limit 1 comment/5s/IP
+- [x] Offline: chat bị khóa
+- [x] React Error Boundary cô lập LiveChat
+- [x] Mobile landscape: ẩn chat
+- [x] iOS Safari: text-base 16px, h-dvh
+- [ ] Admin tạo được live session với title + stream key (deferred)
+- [ ] Viewer count cập nhật mỗi 10 giây (deferred)
+- [ ] Admin có thể end session thủ công (deferred)
 
 ---
 
@@ -2466,15 +2471,24 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 
 ### Phase 4 — Admin Dashboard + Comments
 
-- [ ] Supabase Auth setup (email/password)
-- [ ] Admin login page (`/admin/login`)
-- [ ] Admin dashboard: tạo session, xem trạng thái
-- [ ] Viewer count polling từ Nginx stat
-- [ ] Comment input trên viewer page
-- [ ] Comment realtime subscription
-- [ ] Admin delete comment
-- [ ] Admin block display_name
-- [ ] Admin force-end session route
+- [x] Admin login page (`/admin/login`) — hash-based cookie auth, no Supabase Auth dependency
+- [x] Admin dashboard with sidebar layout
+- [x] Admin live control (`/admin/live`) — video monitor + comment moderation
+- [x] Comment input trên viewer page — YouTube Mobile layout
+- [x] Comment realtime subscription (Postgres Changes CDC: INSERT + UPDATE)
+- [x] Admin delete comment (soft-delete via is_deleted)
+- [x] Admin ban IP (banned_ips table + bulk delete comments)
+- [x] Rate limiting (1 comment/5s/IP, in-memory Map)
+- [x] Strict session isolation (comments filtered by session_id)
+- [x] Offline chat disabled ("Stream is offline. Chat is disabled.")
+- [x] React Error Boundary isolating LiveChat from video
+- [x] Mobile landscape: chat hidden (CSS media query)
+- [x] iOS Safari fix: input text-base (16px), h-dvh
+- [x] localStorage display name (auto-fill after first comment)
+- [x] CSS container fullscreen (no native video fullscreen)
+- [x] Next.js middleware bảo vệ `/admin/*` (cookie check)
+- [ ] Viewer count polling từ Nginx stat (deferred to Phase 5)
+- [ ] Admin force-end session route (deferred to Phase 5)
 
 ### Phase 5 — Production Hardening
 
@@ -2510,6 +2524,14 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 | 17 | **Node.js 24 LTS** (v2.0) | Node 20 EOL tháng 04/2026; 24 là Active LTS đến 04/2028 |
 | 18 | **Tailwind CSS v4** (v2.0) | CSS-first config, 10x faster build, v3 sẽ ngừng hỗ trợ |
 | 19 | **Next.js 16.2.x** (v2.0) | Current stable; Turbopack default giúp dev build nhanh hơn 400% |
+| 20 | **Soft-delete comments** (is_deleted BOOLEAN) | UPDATE events broadcast qua Realtime thay vì DELETE events (cần quyền đặc biệt). Frontend filter is_deleted=false |
+| 21 | **Hash-based admin auth** (SHA256 cookie) | Không dependency JWT. Login API hash password → set httpOnly cookie. Middleware check cookie format. API routes verify hash |
+| 22 | **In-memory rate limiter** (Map<IP, timestamp>) | Zero dependency, 1 comment/5s/IP. Reset khi container restart |
+| 23 | **CSS Container Fullscreen** (không native video) | Fullscreen API trên wrapper div, ẩn chat khi fullscreen mobile |
+| 24 | **Mobile landscape: ẩn chat** | CSS `@media (orientation: landscape) and (max-width: 1023px)` → `.chat-column { display: none }` |
+| 25 | **React Error Boundary** bao LiveChat | Fault isolation: comment system crash không làm sập video player |
+| 26 | **banned_ips table** (ip TEXT PK) | IP-based ban, không block theo display_name (dễ fake). Admin bấm [Cấm] → upsert IP + soft-delete tất cả comment từ IP đó |
+| 27 | **localStorage display_name** | Lần đầu hiện ô nhập tên, các lần sau tự động điền từ localStorage |
 
 ---
 

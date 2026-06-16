@@ -10,3 +10,26 @@
 body {
   font-family: var(--font-sans), sans-serif;
 }
+
+/* Custom scrollbar for chat */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+
+/* Landscape: hide chat on mobile */
+@media (orientation: landscape) and (max-width: 1023px) {
+  .chat-column {
+    display: none;
+  }
+}
+
+/* Prevent iOS auto-zoom on inputs */
+input[type="text"] {
+  font-size: 16px;
+}

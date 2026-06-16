@@ -33,6 +33,7 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`live.mecwish.com`)

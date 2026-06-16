@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 
 type PlayerState = "loading" | "playing" | "offline" | "error";
 
@@ -8,15 +8,13 @@ interface LivePlayerProps {
   hlsUrl: string;
 }
 
+export interface LivePlayerHandle {
+  toggleFullscreen: () => void;
+}
+
 function Spinner() {
   return (
-    <svg
-      className="animate-spin h-8 w-8"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
+    <svg className="animate-spin h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
@@ -48,16 +46,47 @@ function PlayIcon() {
   );
 }
 
-export function LivePlayer({ hlsUrl }: LivePlayerProps) {
+function FullscreenIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+    </svg>
+  );
+}
+
+export const LivePlayer = forwardRef<LivePlayerHandle, LivePlayerProps>(function LivePlayer({ hlsUrl }, ref) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<{ destroy: () => void } | null>(null);
   const [state, setState] = useState<PlayerState>("loading");
   const [retryCount, setRetryCount] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const scheduleRetry = useCallback(() => {
     const timer = setTimeout(() => setRetryCount((c) => c + 1), 5000);
     return () => clearTimeout(timer);
   }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ toggleFullscreen }), [toggleFullscreen]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -115,7 +144,7 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
               video.play().catch(() => {});
             }
           },
-          { once: true }
+          { once: true },
         );
         video.addEventListener(
           "error",
@@ -125,7 +154,7 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
               cleanupRetry = scheduleRetry();
             }
           },
-          { once: true }
+          { once: true },
         );
       } else {
         setState("error");
@@ -142,7 +171,11 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
   }, [hlsUrl, retryCount, scheduleRetry]);
 
   return (
-    <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
+    <div
+      ref={containerRef}
+      className="relative w-full bg-black"
+      style={{ aspectRatio: isFullscreen ? "auto" : "16/9" }}
+    >
       <video
         ref={videoRef}
         className="w-full h-full block"
@@ -150,12 +183,20 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
         controls={state === "playing"}
       />
 
+      {/* Fullscreen button overlay */}
+      <button
+        type="button"
+        className="absolute bottom-2 right-2 z-10 bg-black/60 border border-gray-600 p-1.5 hover:bg-black/80 transition-colors"
+        onClick={toggleFullscreen}
+        aria-label="Toggle fullscreen"
+      >
+        <FullscreenIcon />
+      </button>
+
       {state === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black">
           <Spinner />
-          <p className="text-sm text-gray-400 font-medium">
-            Connecting to stream...
-          </p>
+          <p className="text-sm text-gray-400 font-medium">Connecting to stream...</p>
         </div>
       )}
 
@@ -189,4 +230,4 @@ export function LivePlayer({ hlsUrl }: LivePlayerProps) {
       )}
     </div>
   );
-}
+});
