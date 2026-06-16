@@ -102,7 +102,7 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-3 border border-red-500 px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold text-red-500 hover:bg-red-500/10 transition-colors"
               >
                 <LiveIndicator />
-                ĐANG CÓ PHIÊN LIVE - BẤM VÀO ĐỂ XEM
+                Đang Livestream - bấm vào để xem
               </a>
             ) : (
               <div className="text-center">
