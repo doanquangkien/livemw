@@ -1,10 +1,28 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { LivePlayer, type LivePlayerHandle } from "@/app/components/LivePlayer";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
 import { useComments, type Comment } from "@/hooks/useComments";
 import { useViewerCount } from "@/hooks/useViewerCount";
+import ConfirmModal from "@/app/components/ConfirmModal";
+import AlertModal from "@/app/components/AlertModal";
+
+interface AlertState {
+  open: boolean;
+  title: string;
+  message: string;
+  variant: "danger" | "warning" | "info" | "success";
+}
+
+interface ConfirmState {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  variant: "danger" | "warning" | "info";
+  onConfirm: () => void;
+}
 
 export default function AdminLivePage() {
   const { status, session, hlsUrl } = useLiveStatus();
@@ -13,45 +31,70 @@ export default function AdminLivePage() {
   const playerRef = useRef<LivePlayerHandle>(null);
   const viewerCount = useViewerCount(isLive);
 
+  const [alert, setAlert] = useState<AlertState>({ open: false, title: "", message: "", variant: "info" });
+  const [confirm, setConfirm] = useState<ConfirmState>({ open: false, title: "", message: "", confirmLabel: "Confirm", variant: "danger", onConfirm: () => {} });
+
+  const showAlert = useCallback((title: string, message: string, variant: AlertState["variant"] = "danger") => {
+    setAlert({ open: true, title, message, variant });
+  }, []);
+
   const handleDelete = useCallback(async (commentId: string) => {
     try {
       const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
       if (!res.ok) {
         const body = await res.json();
-        alert(body.error ?? "Failed to delete");
+        showAlert("Error", body.error ?? "Failed to delete", "danger");
       }
     } catch {
-      alert("Network error");
+      showAlert("Error", "Network error", "danger");
     }
-  }, []);
+  }, [showAlert]);
 
   const handleBan = useCallback(async (commentId: string) => {
-    if (!confirm("Ban this user? All their comments will be removed.")) return;
-    try {
-      const res = await fetch("/api/comments/ban", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comment_id: commentId }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        alert(body.error ?? "Failed to ban");
-      }
-    } catch {
-      alert("Network error");
-    }
-  }, []);
+    setConfirm({
+      open: true,
+      title: "Ban User",
+      message: "Ban this user? All their comments will be removed.",
+      confirmLabel: "Ban",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/comments/ban", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ comment_id: commentId }),
+          });
+          if (!res.ok) {
+            const body = await res.json();
+            showAlert("Error", body.error ?? "Failed to ban", "danger");
+          }
+        } catch {
+          showAlert("Error", "Network error", "danger");
+        }
+        setConfirm((prev) => ({ ...prev, open: false }));
+      },
+    });
+  }, [showAlert]);
 
-  const handleForceEnd = useCallback(async () => {
-    if (!confirm("Chắc chắn muốn cưỡng chế kết thúc Live bị kẹt trong Database?")) return;
-    try {
-      const res = await fetch("/api/admin/force-end", { method: "POST" });
-      if (!res.ok) throw new Error("Failed to end");
-      alert("Đã kết thúc Live thành công!");
-    } catch {
-      alert("Lỗi mạng hoặc Server từ chối");
-    }
-  }, []);
+  const handleForceEnd = useCallback(() => {
+    setConfirm({
+      open: true,
+      title: "Force End Live",
+      message: "Chắc chắn muốn cưỡng chế kết thúc Live bị kẹt trong Database?",
+      confirmLabel: "Force End",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/admin/force-end", { method: "POST" });
+          if (!res.ok) throw new Error("Failed to end");
+          showAlert("Success", "Đã kết thúc Live thành công!", "success");
+        } catch {
+          showAlert("Error", "Lỗi mạng hoặc Server từ chối", "danger");
+        }
+        setConfirm((prev) => ({ ...prev, open: false }));
+      },
+    });
+  }, [showAlert]);
 
   return (
     <div className="flex flex-col lg:flex-row h-full bg-gray-950">
@@ -156,6 +199,24 @@ export default function AdminLivePage() {
           ))}
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirm.open}
+        onClose={() => setConfirm((prev) => ({ ...prev, open: false }))}
+        onConfirm={confirm.onConfirm}
+        title={confirm.title}
+        message={confirm.message}
+        confirmLabel={confirm.confirmLabel}
+        variant={confirm.variant}
+      />
+
+      <AlertModal
+        open={alert.open}
+        onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
+        title={alert.title}
+        message={alert.message}
+        variant={alert.variant}
+      />
     </div>
   );
 }
