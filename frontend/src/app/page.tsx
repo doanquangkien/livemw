@@ -172,8 +172,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-gray-900 mt-8">
         <div className="max-w-4xl mx-auto px-4 py-6 text-center">
-          <p className="text-xs text-gray-700">
-            © {new Date().getFullYear()} LiveMecwish — Nền tảng livestream tinh gọn
+          <p className="text-sm text-gray-700">
+            © {new Date().getFullYear()} Doan Quang Luyen - All Rights Reserved.
           </p>
         </div>
       </footer>
