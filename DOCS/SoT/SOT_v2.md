@@ -1423,18 +1423,21 @@ export function LivePlayer({ hlsUrl, autoPlay = true }: LivePlayerProps) {
 }
 ```
 
-### 11.3 Route Structure
+### 11.3 Route Structure (đã cập nhật Phase 4)
 
 ```
-/                      → Homepage (live discovery)
-/live                  → Viewer trang xem (LivePlayer + comments)
-/admin/login           → Admin đăng nhập
-/admin/dashboard       → Admin quản lý session
-/admin/live            → Admin monitor khi đang live
-/api/rtmp/on-publish   → Nginx-RTMP callback (Node.js API, không phải Next.js)
-/api/rtmp/on-publish-done → Nginx-RTMP callback
-/api/viewer-count      → Lấy số lượng viewer từ Nginx stat
-/api/comments          → POST new comment
+/                      → Landing Page (kiểm tra live_sessions, nút "ĐANG LIVE" nếu có phiên)
+/live                  → Phòng xem (LivePlayer + LiveChat)
+/admin                 → Admin Dashboard overview
+/admin/login           → Admin đăng nhập (password form)
+/admin/live            → Admin Live Control (video monitor + moderation)
+/api/on-publish        → Nginx-RTMP callback (Next.js Route Handler)
+/api/on-publish-done   → Nginx-RTMP callback (Next.js Route Handler)
+/api/comments          → POST create comment (rate limit + ban check + session validation)
+/api/comments/[id]     → DELETE soft-delete (admin, cookie auth)
+/api/comments/ban      → POST ban IP + bulk delete (admin, cookie auth)
+/api/admin/login       → POST verify password, set httpOnly cookie
+```
 /api/comments/[id]     → DELETE (admin)
 /api/sessions          → GET current, POST create
 /api/sessions/[id]/end → POST force-end session

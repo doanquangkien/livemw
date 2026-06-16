@@ -1,66 +1,58 @@
 "use client";
 
-import { useRef } from "react";
-import { LivePlayer, type LivePlayerHandle } from "./components/LivePlayer";
-import { LiveChat } from "./components/LiveChat";
-import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
 
-export default function Home() {
-  const { status, session, hlsUrl } = useLiveStatus();
+function LiveIndicator() {
+  return (
+    <span className="relative flex h-3 w-3">
+      <span className="absolute inline-flex h-full w-full animate-ping bg-red-500 opacity-75" />
+      <span className="relative inline-flex h-3 w-3 bg-red-500" />
+    </span>
+  );
+}
+
+export default function LandingPage() {
+  const { status } = useLiveStatus();
   const isLive = status === "live";
-  const playerRef = useRef<LivePlayerHandle>(null);
+  const isLoading = status === "loading";
 
   return (
-    <main className="flex flex-col lg:flex-row h-dvh bg-black overflow-hidden">
-      {/* Video section */}
-      <div className="shrink-0 w-full lg:flex-1 lg:min-w-0">
-        <div className="relative flex items-center justify-center h-full">
-          <div className="w-full max-h-full">
-            {/* Header bar */}
-            <div className="flex items-center justify-between px-4 py-2 lg:py-3">
-              <span className="text-sm lg:text-lg font-semibold tracking-wide text-white">
-                LiveMecwish
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium">
-                {isLive ? (
-                  <>
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping bg-red-500 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 bg-red-500" />
-                    </span>
-                    <span className="text-red-500 font-bold">LIVE</span>
-                  </>
-                ) : (
-                  <span className="text-gray-400">
-                    {status === "loading" ? "CHECKING..." : "OFFLINE"}
-                  </span>
-                )}
-              </span>
-            </div>
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-black px-6">
+      <div className="text-center max-w-md">
+        <h1 className="text-2xl lg:text-3xl font-semibold tracking-wide text-white mb-3">
+          LiveMecwish
+        </h1>
+        <p className="text-sm text-gray-500 mb-10">
+          Nen tảng livestream tinh gọn cho moi người.
+        </p>
 
-            {/* Player */}
-            <LivePlayer ref={playerRef} hlsUrl={isLive ? hlsUrl : ""} />
-
-            {/* Status bar (mobile only) */}
-            <div className="lg:hidden px-4 py-1 text-xs text-gray-600">
-              {status === "loading"
-                ? "Checking stream status..."
-                : isLive
-                  ? "Streaming live"
-                  : status === "ended"
-                    ? "Stream ended"
-                    : "Waiting for stream"}
-            </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 text-gray-400">
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-sm">Dang kiem tra...</span>
           </div>
-        </div>
-      </div>
-
-      {/* Chat sidebar */}
-      <div className="chat-column flex-1 lg:flex-none lg:w-[400px] min-h-0 border-t lg:border-t-0 lg:border-l border-gray-800">
-        <ErrorBoundary>
-          <LiveChat sessionId={session?.id ?? null} isLive={isLive} />
-        </ErrorBoundary>
+        ) : isLive ? (
+          <a
+            href="/live"
+            className="inline-flex items-center gap-3 border border-red-500 px-8 py-4 text-base font-semibold text-red-500 hover:bg-red-500/10 transition-colors"
+          >
+            <LiveIndicator />
+            DANG CO PHIEN LIVE - BAM VAO DE XEM
+          </a>
+        ) : (
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 text-gray-600">
+              <span className="block h-2 w-2 bg-gray-700" />
+              <span className="text-sm font-medium">Hien chua co phien live nao</span>
+            </div>
+            <p className="text-xs text-gray-700">
+              Quay lai sau khi admin bat dau phien live.
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 
 export interface Comment {
@@ -16,27 +16,28 @@ export interface Comment {
 export function useComments(sessionId: string | null) {
   const [comments, setComments] = useState<Comment[]>([]);
 
-  const fetchExisting = useCallback(async () => {
-    if (!sessionId) {
-      setComments([]);
-      return;
-    }
+  useEffect(() => {
+    let cancelled = false;
 
-    const { data } = await supabase
+    // Clear old comments immediately when session changes
+    setComments([]);
+
+    if (!sessionId) return;
+
+    // Fetch existing comments for the current session only
+    supabase
       .from("comments")
       .select("*")
       .eq("session_id", sessionId)
       .eq("is_deleted", false)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (!cancelled && data) {
+          setComments(data as Comment[]);
+        }
+      });
 
-    if (data) setComments(data as Comment[]);
-  }, [sessionId]);
-
-  useEffect(() => {
-    fetchExisting();
-
-    if (!sessionId) return;
-
+    // Subscribe to new comments AND soft-deletes for this session only
     const channel = supabase
       .channel(`comments:${sessionId}`)
       .on(
@@ -72,9 +73,10 @@ export function useComments(sessionId: string | null) {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [sessionId, fetchExisting]);
+  }, [sessionId]);
 
   return comments;
 }

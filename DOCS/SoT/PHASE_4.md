@@ -130,6 +130,64 @@ app/
 
 ---
 
+## Bài học #6 (HOTFIX): Lỗi rò rỉ bình luận cũ — "Ghost Comments"
+
+**Triệu chứng:** Phiên live mới bắt đầu nhưng khung chat hiển thị bình luận của phiên live cũ (đã kết thúc). "Bóng ma" — râu ông nọ cắm cằm bà kia.
+
+**Nguyên nhân gốc:** Trong `useComments` hook, khi `sessionId` thay đổi (old → new):
+1. Effect cleanup chạy → remove channel cũ
+2. Effect mới gọi `fetchExisting()` với `sessionId` mới
+3. Nhưng `fetchExisting` là async — trong lúc chờ response, state vẫn còn giữ comments của phiên cũ
+4. Không có lệnh `setComments([])` nào được gọi trước khi fetch
+
+**Fix gồm 3 phần:**
+1. **Reset state ngay lập tức**: Gọi `setComments([])` ở đầu effect, trước mọi async ops
+2. **Cancelled flag**: Nếu component unmount hoặc sessionId đổi trước khi fetch hoàn thành, kết quả fetch cũ bị bỏ qua
+3. **Loại bỏ useCallback**: Đơn giản hóa code, fetchExisting đã được inline vào effect để dễ kiểm soát cancellation
+
+```typescript
+// BEFORE (lỗi):
+const fetchExisting = useCallback(async () => {
+  if (!sessionId) { setComments([]); return; }
+  const { data } = await supabase.from("comments").select("*")...;
+  if (data) setComments(data);  // ← ghi đè state cũ nhưng vẫn còn khoảng trễ
+}, [sessionId]);
+
+useEffect(() => {
+  fetchExisting();  // ← async, chưa clear state cũ
+  ...
+}, [sessionId, fetchExisting]);
+
+// AFTER (fix):
+useEffect(() => {
+  let cancelled = false;
+  setComments([]);  // ← clear NGAY LẬP TỨC
+
+  if (!sessionId) return;
+
+  supabase.from("comments").select("*")...
+    .then(({ data }) => {
+      if (!cancelled && data) setComments(data);  // ← cancelled check
+    });
+  ...
+  return () => { cancelled = true; ... };
+}, [sessionId]);
+```
+
+---
+
+## Bài học #7 (HOTFIX): Tách Landing Page và Phòng xem
+
+**Vấn đề:** UX trước đây gom toàn bộ giao diện xem Live (video + chat) vào `app/page.tsx`. Người dùng vào trang chủ là thấy ngay video + chat, không có landing page giới thiệu.
+
+**Fix:**
+- `app/page.tsx` → **Landing Page**: Gọi Supabase kiểm tra `live_sessions`. Nếu có phiên live → hiện nút "ĐANG CÓ PHIÊN LIVE - BẤM VÀO ĐỂ XEM" dẫn sang `/live`. Nếu offline → thông báo "Hiện chưa có phiên live nào".
+- `app/live/page.tsx` → **Phòng xem**: Toàn bộ giao diện Video + Chat (YouTube Mobile layout cũ).
+
+**Route mới:** `/` và `/live` — tách biệt rạch ròi.
+
+---
+
 ## Kết quả Phase 4
 
 | Item | Status |
