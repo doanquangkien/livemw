@@ -111,7 +111,6 @@ export default function ContactTab() {
           <div>
             <h3 className="text-sm font-semibold text-white">Địa chỉ trại</h3>
             <p className="text-sm text-gray-300 mt-1">Xuân An - Gia Lai</p>
-            <p className="text-xs text-gray-500 mt-0.5">(* Vui lòng liên hệ trước khi đến tham quan)</p>
           </div>
         </div>
       </div>
@@ -136,11 +135,10 @@ export default function ContactTab() {
             {/* Modal Body */}
             <div className="p-5 space-y-5">
               <div className="bg-white p-3 mx-auto w-48 h-48 border-[4px] border-green-600 relative">
-                <Image
+                <img
                   src="https://img.vietqr.io/image/vcb-1034848391-compact2.png?amount=0&accountName=DOAN%20QUANG%20LUYEN"
                   alt="Mã QR Vietcombank"
-                  fill
-                  className="object-contain p-1"
+                  className="w-full h-full object-contain p-1"
                 />
               </div>
 

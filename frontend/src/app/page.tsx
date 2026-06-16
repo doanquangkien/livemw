@@ -48,7 +48,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 bg-black border-b border-gray-900">
         <div className="flex items-center justify-between px-4 py-2 lg:py-3 max-w-4xl mx-auto">
           <div className="flex items-center gap-2 lg:gap-3">
-            <span className="text-sm lg:text-lg font-semibold tracking-wide text-white">
+            <span className="text-sm lg:text-lg font-black tracking-widest bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent">
               CHÚC CÁT TƯỜNG
             </span>
             <Image
