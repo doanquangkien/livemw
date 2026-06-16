@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LiveMecwish",
+  metadataBase: new URL("https://live.mecwish.com"),
+  title: "Livestream - Trại Gà Chúc Cát Tường",
   description: "Live stream viewer",
+  openGraph: {
+    images: ["/Cover.png"],
+  },
 };
 
 export default function RootLayout({
