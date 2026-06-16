@@ -142,7 +142,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
               />
               <button
                 type="button"
-                className="shrink-0 border border-gray-700 px-4 py-2 text-white hover:bg-gray-800 transition-colors disabled:opacity-30"
+                className="shrink-0 bg-gray-900 border border-gray-700 px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800 transition-colors disabled:opacity-30"
                 onClick={handleSubmit}
                 disabled={!canSend}
               >
