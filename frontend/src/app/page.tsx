@@ -46,6 +46,9 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 bg-black border-b border-gray-900">
         <div className="flex items-center justify-between px-4 py-2 lg:py-3 max-w-4xl mx-auto">
           <div className="flex items-center gap-2 lg:gap-3">
+            <span className="text-sm lg:text-lg font-semibold tracking-wide text-white">
+              CHÚC CÁT TƯỜNG
+            </span>
             <Image
               src="/logo.png"
               width={40}
@@ -53,21 +56,18 @@ export default function LandingPage() {
               alt="Logo"
               className="w-7 h-7 lg:w-10 lg:h-10"
             />
-            <span className="text-sm lg:text-lg font-semibold tracking-wide text-white">
-              CHÚC CÁT TƯỜNG
-            </span>
           </div>
 
           <span className="inline-flex items-center gap-1.5 text-xs font-medium">
             {isLoading ? (
-              <span className="text-gray-500">CHECKING...</span>
+              <span className="text-gray-500">ĐANG KIỂM TRA...</span>
             ) : isLive ? (
               <>
                 <LiveIndicator />
                 <span className="text-red-500 font-bold">LIVE</span>
               </>
             ) : (
-              <span className="text-gray-500">OFFLINE</span>
+              <span className="text-gray-500">NGOẠI TUYẾN</span>
             )}
           </span>
         </div>
