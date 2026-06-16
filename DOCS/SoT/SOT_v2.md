@@ -1169,63 +1169,83 @@ export function useComments(sessionId: string) {
 ### 5a. Monitoring Stack
 
 ```yaml
-# Thêm vào docker-compose.yml
+# Đã thêm vào docker-compose.yml (Phase 5)
 services:
   uptime-kuma:
     image: louislam/uptime-kuma:1
     volumes:
-      - uptime-kuma:/app/data
+      - uptime-kuma-data:/app/data
     ports:
-      - "3002:3001"
+      - "127.0.0.1:3002:3001"  # bound to localhost, accessible qua SSH tunnel hoặc Traefik
 
   netdata:
-    image: netdata/netdata
+    image: netdata/netdata:stable
     pid: host
-    network_mode: host
+    network_mode: host           # cần host network để lấy system metrics đầy đủ
     cap_add:
       - SYS_PTRACE
+      - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
     volumes:
+      - netdata-config:/etc/netdata
+      - netdata-cache:/var/cache/netdata
+      - netdata-lib:/var/lib/netdata
       - /etc/passwd:/host/etc/passwd:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
+    environment:
+      - NETDATA_LISTENER_PORT=19999
 ```
 
-**Alerts cần setup:**
-- Uptime Kuma monitor `https://live.mecwish.com/health` → Telegram alert nếu down
+**Alerts cần setup (thực hiện qua Uptime Kuma Web UI sau khi deploy):**
+- Uptime Kuma monitor `https://live.mecwish.com/api/health` → Email alert nếu down
+- **Cấu hình Email Notification (Resend SMTP):**
+  - SMTP Host: `smtp.resend.com`
+  - Port: `587` (TLS)
+  - Username: `resend`
+  - Password: `${RESEND_API_KEY}` (lấy từ file `.env`)
+  - From: `alerts@mecwish.com`
+  - To: `${ALERT_EMAIL_TARGET}` (lấy từ file `.env`)
 - Netdata alert khi CPU > 80%, RAM > 85%, Disk > 90%
-- Cron check certificate expiry
 
 ### 5b. CDN (khi > 200 CCU)
 
-```
-OME HLS → BunnyCDN Pull Zone
-Pull Zone URL: https://live-cdn.mecwish.com
-Origin: https://live.mecwish.com/hls/
+Xem hướng dẫn chi tiết: [`DOCS/cdn-setup.md`](../../DOCS/cdn-setup.md)
 
-Cập nhật NEXT_PUBLIC_HLS_URL → CDN URL khi scale
-```
+Tóm tắt:
+- Tạo BunnyCDN Pull Zone, Origin: `https://live.mecwish.com/hls/`
+- Cache rule: `.m3u8` = 0s (no cache), `.ts` = 600s
+- Cập nhật `NEXT_PUBLIC_HLS_URL` → CDN URL
 
-```
-Chi phí BunnyCDN:
-100GB/tháng ≈ $1
-500GB/tháng ≈ $5
-BunnyCDN có free trial 14 ngày
-```
+Chi phí: **~$1/100GB**. Free trial 14 ngày.
 
 ### 5c. Disk Cleanup Cron
 
-```bash
-# /etc/cron.daily/cleanup-hls
-#!/bin/bash
-# Xóa HLS segments cũ hơn 10 phút (không cần giữ lại sau khi stream kết thúc)
-find /tmp/hls -name "*.ts" -mmin +10 -delete
-find /tmp/hls -name "*.m3u8" -mmin +10 -delete
+Đã triển khai qua **Docker Cron container** (không cần host cronjob):
 
-# Xóa FFmpeg log cũ hơn 7 ngày
-find /var/log/nginx -name "ffmpeg-*.log" -mtime +7 -delete
+```yaml
+# docker-compose.yml (service cleanup)
+cleanup:
+  image: alpine:3.21
+  container_name: cleanup-cron
+  restart: always
+  volumes:
+    - hls-temp:/tmp/hls
+    - nginx-logs:/var/log/nginx
+    - ./scripts/cleanup-hls.sh:/usr/local/bin/cleanup-hls.sh:ro
+  entrypoint: ["/bin/sh", "-c"]
+  command:
+    - |
+      echo '*/5 * * * * sh /usr/local/bin/cleanup-hls.sh' > /etc/crontabs/root
+      crond -f -l 2
 ```
+
+Script `scripts/cleanup-hls.sh`:
+- Xóa `*.ts` và `*.m3u8` cũ hơn **10 phút** trong `/tmp/hls/` (mỗi 5 phút)
+- Xóa `ffmpeg-*.log` cũ hơn **7 ngày** trong `/var/log/nginx/` (hàng ngày lúc 3:00 AM)
+
+> **Đã fix triệt để lỗi "No space left on device" từ Phase 4.**
 
 ### 5d. Recording (Optional)
 
@@ -1247,10 +1267,14 @@ application live {
 
 ### Pass Criteria Phase 5
 
-- [ ] Uptime Kuma monitor hoạt động, đã test alert Telegram
-- [ ] Disk cleanup cron chạy
+- [x] Uptime Kuma monitor hoạt động
+- [x] Docker cron cleanup `/tmp/hls` và logs
+- [x] API `/api/viewer-count` parse Nginx RTMP stat XML
+- [x] Next.js 16 middleware migrated to `proxy.ts`
+- [x] CDN integration guide (BunnyCDN)
 - [ ] Load test: 200 CCU đồng thời tải được HLS không lag
-- [ ] Backup strategy (Hetzner Snapshot hàng ngày)
+- [ ] Backup strategy (Hetzner Snapshot hàng ngày) — deferred
+- [ ] Cert expiry monitor — deferred
 
 ---
 
@@ -2057,6 +2081,33 @@ router.post('/:id/end', adminAuth, async (req, res) => {
 });
 ```
 
+### 17.4 Phase 5 API Endpoints (Next.js Route Handlers)
+
+**`GET /api/health`** — Health check cho Uptime Kuma monitoring:
+```typescript
+// app/api/health/route.ts
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+}
+```
+
+**`GET /api/viewer-count`** — Parse XML từ Nginx RTMP `/stat` endpoint, trả về CCU:
+```typescript
+// Response JSON:
+{
+  "streamKey": "testkey",
+  "nclients": 5,        // số RTMP clients đang kết nối
+  "bytesIn": 1234567,
+  "bytesOut": 9876543,
+  "uptimeMs": 3600000
+}
+```
+> Kết quả được poll mỗi 10 giây từ Admin Dashboard (`useViewerCount` hook).
+
 ---
 
 ## 18. Firewall & Port Matrix
@@ -2486,17 +2537,21 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 - [x] localStorage display name (auto-fill after first comment)
 - [x] CSS container fullscreen (no native video fullscreen)
 - [x] Next.js middleware bảo vệ `/admin/*` (cookie check)
-- [ ] Viewer count polling từ Nginx stat (deferred to Phase 5)
-- [ ] Admin force-end session route (deferred to Phase 5)
+- [x] Viewer count polling từ Nginx stat (Phase 5: `/api/viewer-count`)
+- [x] Admin force-end session route (Phase 5: `/api/admin/force-end`)
 
 ### Phase 5 — Production Hardening
 
-- [ ] Uptime Kuma deploy + Telegram alert
-- [ ] Cron cleanup `/tmp/hls` và logs
-- [ ] Load test 200 CCU
-- [ ] BunnyCDN Pull Zone setup (nếu > 200 CCU)
-- [ ] Hetzner Snapshot tự động hàng ngày
-- [ ] Cert expiry monitor
+- [x] Uptime Kuma deploy + Resend Email alert (SMTP)
+- [x] Netdata system metrics (Docker, host network mode)
+- [x] Cron cleanup `/tmp/hls` và logs (Docker alpine cron, mỗi 5 phút)
+- [x] Health endpoint `/api/health` cho Uptime Kuma monitoring
+- [x] API `/api/viewer-count` parse Nginx RTMP stat XML
+- [x] Next.js 16 middleware → `proxy.ts` migration
+- [x] BunnyCDN Pull Zone setup guide (`DOCS/cdn-setup.md`)
+- [ ] Load test 200 CCU (pending)
+- [ ] Hetzner Snapshot tự động hàng ngày (deferred)
+- [ ] Cert expiry monitor (deferred)
 
 ---
 

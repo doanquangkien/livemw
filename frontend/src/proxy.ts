@@ -13,17 +13,17 @@ const BOT_AGENTS = [
   "slackbot",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const userAgent = request.headers.get("user-agent")?.toLowerCase() || "";
 
-  // 1. Logic bọc link (Cloaking) cho Bot
+  // 1. Bot cloaking — rewrite bots to meta-rich preview page
   const isBot = BOT_AGENTS.some((bot) => userAgent.includes(bot));
   if (isBot && (pathname === "/" || pathname === "/live")) {
     return NextResponse.rewrite(new URL("/bot-cloak", request.url));
   }
 
-  // 2. Logic bảo vệ trang Admin
+  // 2. Admin route protection — cookie-based auth check
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login" || pathname.startsWith("/api/admin/")) {
       return NextResponse.next();

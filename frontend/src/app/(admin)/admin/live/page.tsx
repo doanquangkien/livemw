@@ -4,12 +4,14 @@ import { useRef, useCallback } from "react";
 import { LivePlayer, type LivePlayerHandle } from "@/app/components/LivePlayer";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
 import { useComments, type Comment } from "@/hooks/useComments";
+import { useViewerCount } from "@/hooks/useViewerCount";
 
 export default function AdminLivePage() {
   const { status, session, hlsUrl } = useLiveStatus();
   const isLive = status === "live";
   const comments = useComments(session?.id ?? null);
   const playerRef = useRef<LivePlayerHandle>(null);
+  const viewerCount = useViewerCount(isLive);
 
   const handleDelete = useCallback(async (commentId: string) => {
     try {
@@ -73,12 +75,19 @@ export default function AdminLivePage() {
                 )}
               </span>
               {isLive && (
-                <button
-                  onClick={handleForceEnd}
-                  className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
-                >
-                  Force End
-                </button>
+                <>
+                  {viewerCount && (
+                    <span className="text-xs text-gray-400">
+                      {viewerCount.nclients} viewer{viewerCount.nclients !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                  <button
+                    onClick={handleForceEnd}
+                    className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+                  >
+                    Force End
+                  </button>
+                </>
               )}
             </div>
           </div>
