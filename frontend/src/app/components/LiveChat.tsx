@@ -61,7 +61,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
 
       if (!res.ok) {
         const body = await res.json();
-        setError(body.error ?? "Failed to send");
+        setError(body.error ?? "Gửi thất bại");
         return;
       }
 
@@ -71,7 +71,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
         setNameStored(true);
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError("Lỗi mạng. Vui lòng thử lại.");
     } finally {
       setSending(false);
     }
@@ -84,7 +84,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
       {/* Header */}
       <div className="shrink-0 px-4 py-3 border-b border-gray-800">
         <span className="text-sm font-semibold text-white">
-          Live Chat ({comments.length})
+          Bình luận ({comments.length})
         </span>
       </div>
 
@@ -92,7 +92,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-0">
         {comments.length === 0 && (
           <p className="text-xs text-gray-600 text-center mt-4">
-            {isLive ? "No comments yet. Be the first!" : "Waiting for stream to start..."}
+            {isLive ? "Chưa có bình luận. Hãy là người đầu tiên!" : "Đang chờ phiên live bắt đầu..."}
           </p>
         )}
         {comments.map((c) => (
@@ -110,7 +110,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
       <div className="shrink-0 border-t border-gray-800 p-3 space-y-2">
         {!isLive ? (
           <p className="text-xs text-gray-600 text-center py-2">
-            Stream is offline. Chat is disabled.
+            Phiên live đã kết thúc. Chat đã tắt.
           </p>
         ) : (
           <>
@@ -118,7 +118,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
               <input
                 type="text"
                 className="w-full bg-gray-900 border border-gray-700 px-3 py-2 text-sm text-white placeholder-gray-500 outline-none"
-                placeholder="Your name (1-30 characters)"
+                placeholder="Tên của bạn (1-30 ký tự)"
                 value={name}
                 maxLength={30}
                 onChange={(e) => setName(e.target.value)}
@@ -130,7 +130,7 @@ export function LiveChat({ sessionId, isLive }: LiveChatProps) {
               <input
                 type="text"
                 className="flex-1 bg-gray-900 border border-gray-700 px-3 py-2 text-base text-white placeholder-gray-500 outline-none"
-                placeholder={isLive ? "Send a message..." : "Waiting for stream..."}
+                placeholder={isLive ? "Gửi tin nhắn..." : "Đang chờ phiên live..."}
                 value={content}
                 maxLength={200}
                 onChange={(e) => setContent(e.target.value)}

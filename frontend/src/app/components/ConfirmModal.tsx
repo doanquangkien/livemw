@@ -46,8 +46,8 @@ export default function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = "Xác nhận",
+  cancelLabel = "Hủy",
   variant = "danger",
 }: ConfirmModalProps) {
   const [visible, setVisible] = useState(false);

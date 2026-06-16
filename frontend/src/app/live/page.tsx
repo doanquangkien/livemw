@@ -46,7 +46,7 @@ export default function LivePage() {
                   </>
                 ) : (
                   <span className="text-gray-400">
-                    {status === "loading" ? "CHECKING..." : "OFFLINE"}
+                    {status === "loading" ? "ĐANG KIỂM TRA..." : "NGOẠI TUYẾN"}
                   </span>
                 )}
               </span>
@@ -58,12 +58,12 @@ export default function LivePage() {
             {/* Status bar (mobile only) */}
             <div className="lg:hidden px-4 py-1 text-xs text-gray-600">
               {status === "loading"
-                ? "Checking stream status..."
+                ? "Đang kiểm tra trạng thái..."
                 : isLive
-                  ? "Streaming live"
+                  ? "Đang phát trực tiếp"
                   : status === "ended"
-                    ? "Stream ended"
-                    : "Waiting for stream"}
+                    ? "Phiên live đã kết thúc"
+                    : "Đang chờ phiên live"}
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return Response.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   }
 
   const { password } = body;
@@ -13,11 +13,11 @@ export async function POST(request: Request) {
 
   if (!adminPassword) {
     console.error("[admin/login] ADMIN_PASSWORD not configured in environment");
-    return Response.json({ error: "Server misconfigured" }, { status: 500 });
+    return Response.json({ error: "Lỗi cấu hình máy chủ" }, { status: 500 });
   }
 
   if (!password || password !== adminPassword) {
-    return Response.json({ error: "Incorrect password" }, { status: 401 });
+    return Response.json({ error: "Sai mật khẩu" }, { status: 401 });
   }
 
   const token = hashAdminToken(password);

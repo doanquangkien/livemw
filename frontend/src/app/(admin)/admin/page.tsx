@@ -1,7 +1,7 @@
 export default function AdminDashboard() {
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6 tracking-tight">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6 tracking-tight">Bảng điều khiển</h1>
       <p className="text-gray-400 text-sm mb-8">
         Chào mừng đến với trung tâm điều khiển LiveMecwish.
       </p>
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <h2 className="text-base font-semibold">Live Control</h2>
+            <h2 className="text-base font-semibold">Điều khiển Live</h2>
           </div>
           <p className="text-sm text-gray-500">
             Giám sát phiên live, kiểm soát bình luận và quản lý danh sách đen.

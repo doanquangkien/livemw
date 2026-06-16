@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         this.props.fallback ?? (
           <div className="flex items-center justify-center p-4 text-sm text-gray-500">
-            Chat is temporarily unavailable
+            Chat tạm thời không khả dụng
           </div>
         )
       );

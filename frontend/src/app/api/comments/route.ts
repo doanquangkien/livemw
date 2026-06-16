@@ -14,28 +14,28 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return Response.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   }
 
   const { session_id, user_name, content } = body;
   const ip = extractIp(request);
 
   if (!session_id || !user_name || !content) {
-    return Response.json({ error: "Missing required fields" }, { status: 400 });
+    return Response.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
   }
 
   if (user_name.length < 1 || user_name.length > 30) {
-    return Response.json({ error: "user_name must be 1-30 characters" }, { status: 400 });
+    return Response.json({ error: "Tên phải từ 1-30 ký tự" }, { status: 400 });
   }
   if (content.length < 1 || content.length > 200) {
-    return Response.json({ error: "content must be 1-200 characters" }, { status: 400 });
+    return Response.json({ error: "Nội dung phải từ 1-200 ký tự" }, { status: 400 });
   }
 
   // Rate limit
   const { allowed, retryAfterMs } = checkRateLimit(ip);
   if (!allowed) {
     return Response.json(
-      { error: "Too many comments. Please wait.", retry_after_ms: retryAfterMs },
+      { error: "Gửi bình luận quá nhanh. Vui lòng đợi.", retry_after_ms: retryAfterMs },
       { status: 429 },
     );
   }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (banEntry) {
-    return Response.json({ error: "You are banned from commenting" }, { status: 403 });
+    return Response.json({ error: "Bạn đã bị cấm bình luận" }, { status: 403 });
   }
 
   // Validate session is live
@@ -61,10 +61,10 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!session) {
-    return Response.json({ error: "Session not found" }, { status: 404 });
+    return Response.json({ error: "Không tìm thấy phiên live" }, { status: 404 });
   }
   if (session.status !== "live") {
-    return Response.json({ error: "Session is not live" }, { status: 403 });
+    return Response.json({ error: "Phiên live không hoạt động" }, { status: 403 });
   }
 
   // Insert comment
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error("[comments] insert error:", error.message);
-    return Response.json({ error: "Failed to save comment" }, { status: 500 });
+    return Response.json({ error: "Lưu bình luận thất bại" }, { status: 500 });
   }
 
   return Response.json(comment, { status: 201 });

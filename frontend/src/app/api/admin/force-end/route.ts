@@ -8,7 +8,7 @@ export async function POST() {
   const token = cookieStore.get("admin_token")?.value;
 
   if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Không có quyền truy cập" }, { status: 401 });
   }
 
   const expectedToken = crypto
@@ -17,7 +17,7 @@ export async function POST() {
     .digest("hex");
 
   if (token !== expectedToken) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Bị từ chối truy cập" }, { status: 403 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

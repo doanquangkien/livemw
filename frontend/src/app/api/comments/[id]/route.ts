@@ -6,12 +6,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!verifyAdminCookie(request.headers.get("cookie"))) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json({ error: "Không có quyền truy cập" }, { status: 401 });
   }
 
   const { id } = await params;
   if (!id) {
-    return Response.json({ error: "Missing comment id" }, { status: 400 });
+    return Response.json({ error: "Thiếu ID bình luận" }, { status: 400 });
   }
 
   const supabase = createServerClient();
@@ -23,7 +23,7 @@ export async function DELETE(
 
   if (error) {
     console.error("[comments/delete] error:", error.message);
-    return Response.json({ error: "Failed to delete comment" }, { status: 500 });
+    return Response.json({ error: "Xóa bình luận thất bại" }, { status: 500 });
   }
 
   return Response.json({ ok: true });

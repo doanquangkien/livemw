@@ -3,19 +3,19 @@ import { verifyAdminCookie } from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
   if (!verifyAdminCookie(request.headers.get("cookie"))) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json({ error: "Không có quyền truy cập" }, { status: 401 });
   }
 
   let body: { comment_id?: string };
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return Response.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   }
 
   const { comment_id } = body;
   if (!comment_id) {
-    return Response.json({ error: "Missing comment_id" }, { status: 400 });
+    return Response.json({ error: "Thiếu ID bình luận" }, { status: 400 });
   }
 
   const supabase = createServerClient();
@@ -27,12 +27,12 @@ export async function POST(request: Request) {
     .single();
 
   if (fetchError || !comment) {
-    return Response.json({ error: "Comment not found" }, { status: 404 });
+    return Response.json({ error: "Không tìm thấy bình luận" }, { status: 404 });
   }
 
   const targetIp = comment.user_ip;
   if (!targetIp || targetIp === "unknown") {
-    return Response.json({ error: "Cannot ban: no IP associated with this comment" }, { status: 400 });
+    return Response.json({ error: "Không thể cấm: bình luận không có địa chỉ IP" }, { status: 400 });
   }
 
   const { error: banError } = await supabase
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
   if (delError) {
     console.error("[comments/ban] delete error:", delError.message);
-    return Response.json({ error: "Failed to delete comments" }, { status: 500 });
+    return Response.json({ error: "Xóa bình luận thất bại" }, { status: 500 });
   }
 
   return Response.json({ ok: true, banned_ip: targetIp });

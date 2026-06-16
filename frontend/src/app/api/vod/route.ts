@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     .range(offset, offset + limit - 1);
 
   if (error) {
-    return Response.json({ error: "Failed to fetch VODs" }, { status: 500 });
+    return Response.json({ error: "Tải danh sách video thất bại" }, { status: 500 });
   }
 
   const total = count ?? 0;

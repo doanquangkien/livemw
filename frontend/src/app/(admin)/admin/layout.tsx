@@ -5,8 +5,8 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/live", label: "Live Control" },
+  { href: "/admin", label: "Tổng quan" },
+  { href: "/admin/live", label: "Điều khiển Live" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar / Topnav */}
       <aside className="w-full md:w-52 shrink-0 border-b md:border-b-0 md:border-r border-gray-800 flex flex-row md:flex-col overflow-x-auto">
         <div className="px-4 py-3 md:py-4 md:border-b border-gray-800 flex items-center shrink-0">
-          <span className="text-sm font-semibold tracking-wide">Admin Panel</span>
+          <span className="text-sm font-semibold tracking-wide">Quản trị</span>
         </div>
         <nav className="flex-1 px-2 flex flex-row md:flex-col md:p-3 space-x-1 md:space-x-0 md:space-y-1 items-center md:items-stretch overflow-x-auto">
           {navItems.map((item) => (
@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             rel="noopener noreferrer"
             className="block px-3 py-2 text-xs text-gray-600 hover:text-gray-400 transition-colors"
           >
-            View Site →
+            Xem trang →
           </a>
         </div>
       </aside>

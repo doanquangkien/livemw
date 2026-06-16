@@ -186,7 +186,7 @@ export const LivePlayer = forwardRef<LivePlayerHandle, LivePlayerProps>(function
       {state === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black">
           <Spinner />
-          <p className="text-sm text-gray-400 font-medium">Connecting to stream...</p>
+          <p className="text-sm text-gray-400 font-medium">Đang kết nối tới máy chủ...</p>
         </div>
       )}
 
@@ -194,11 +194,11 @@ export const LivePlayer = forwardRef<LivePlayerHandle, LivePlayerProps>(function
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black">
           <OfflineIcon />
           <div className="text-center">
-            <p className="text-base font-semibold">Stream is offline</p>
+            <p className="text-base font-semibold">Phiên live ngoại tuyến</p>
             <p className="text-sm text-gray-500 mt-1">
               {retryCount > 0
-                ? `Retrying... (attempt ${retryCount})`
-                : "Waiting for stream to start"}
+                ? `Đang thử lại... (lần ${retryCount})`
+                : "Đang chờ phiên live bắt đầu"}
             </p>
           </div>
         </div>
@@ -207,14 +207,14 @@ export const LivePlayer = forwardRef<LivePlayerHandle, LivePlayerProps>(function
       {state === "error" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black">
           <ErrorIcon />
-          <p className="text-base font-semibold">Playback error</p>
+          <p className="text-base font-semibold">Lỗi phát video</p>
           <button
             type="button"
             className="inline-flex items-center gap-2 border border-white px-6 py-2 text-sm font-medium hover:bg-white hover:text-black transition-colors"
             onClick={() => setRetryCount((c) => c + 1)}
           >
             <PlayIcon />
-            Retry
+            Thử lại
           </button>
         </div>
       )}

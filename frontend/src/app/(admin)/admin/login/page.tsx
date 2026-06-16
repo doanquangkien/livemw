@@ -33,13 +33,13 @@ export default function AdminLoginPage() {
 
       if (!res.ok) {
         const body = await res.json();
-        setError(body.error ?? "Login failed");
+        setError(body.error ?? "Đăng nhập thất bại");
         return;
       }
 
       router.push("/admin");
     } catch {
-      setError("Network error. Please try again.");
+      setError("Lỗi mạng. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -52,15 +52,15 @@ export default function AdminLoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 border border-gray-700 mb-4">
             <LockIcon />
           </div>
-          <h1 className="text-lg font-semibold tracking-wide">Admin Login</h1>
-          <p className="text-xs text-gray-600 mt-1">Enter admin password to continue</p>
+          <h1 className="text-lg font-semibold tracking-wide">Đăng nhập Quản trị</h1>
+          <p className="text-xs text-gray-600 mt-1">Nhập mật khẩu quản trị để tiếp tục</p>
         </div>
 
         <div className="space-y-4">
           <input
             type="password"
             className="w-full bg-gray-900 border border-gray-700 px-3 py-2 text-base text-white placeholder-gray-500 outline-none"
-            placeholder="Password"
+            placeholder="Mật khẩu"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => {
@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
             onClick={handleSubmit}
             disabled={loading || !password}
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
 
           {error && <p className="text-xs text-red-400 text-center">{error}</p>}

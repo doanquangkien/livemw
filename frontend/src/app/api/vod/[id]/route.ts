@@ -12,7 +12,7 @@ export async function PATCH(
   const vodUrl = body.vod_url as string | undefined;
 
   if (!vodUrl) {
-    return Response.json({ error: "Missing vod_url" }, { status: 400 });
+    return Response.json({ error: "Thiếu URL video" }, { status: 400 });
   }
 
   const supabase = createServerClient();
@@ -23,7 +23,7 @@ export async function PATCH(
     .eq("id", id);
 
   if (error) {
-    return Response.json({ error: "Failed to update VOD" }, { status: 500 });
+    return Response.json({ error: "Cập nhật video thất bại" }, { status: 500 });
   }
 
   return Response.json({ success: true });
@@ -43,7 +43,7 @@ export async function DELETE(
     .maybeSingle();
 
   if (fetchError || !session) {
-    return Response.json({ error: "VOD not found" }, { status: 404 });
+    return Response.json({ error: "Không tìm thấy video" }, { status: 404 });
   }
 
   // Delete physical file if stored locally
@@ -63,7 +63,7 @@ export async function DELETE(
     .eq("id", id);
 
   if (deleteError) {
-    return Response.json({ error: "Failed to delete VOD" }, { status: 500 });
+    return Response.json({ error: "Xóa video thất bại" }, { status: 500 });
   }
 
   return Response.json({ success: true });

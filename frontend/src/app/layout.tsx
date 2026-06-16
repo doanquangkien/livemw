@@ -16,10 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://live.mecwish.com"),
   title: "Livestream - Trại Gà Chúc Cát Tường",
-  description: "Live stream viewer",
+  description: "Xem livestream trực tiếp",
   openGraph: {
     title: "Livestream - Trại Gà Chúc Cát Tường",
-    description: "Live stream viewer",
+    description: "Xem livestream trực tiếp",
     url: "https://live.mecwish.com",
     type: "website",
     images: ["/Cover.png"],

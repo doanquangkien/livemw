@@ -43,19 +43,19 @@ export default function AdminLivePage() {
       const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
       if (!res.ok) {
         const body = await res.json();
-        showAlert("Error", body.error ?? "Failed to delete", "danger");
+        showAlert("Lỗi", body.error ?? "Xóa thất bại", "danger");
       }
     } catch {
-      showAlert("Error", "Network error", "danger");
+      showAlert("Lỗi", "Lỗi mạng", "danger");
     }
   }, [showAlert]);
 
   const handleBan = useCallback(async (commentId: string) => {
     setConfirm({
       open: true,
-      title: "Ban User",
-      message: "Ban this user? All their comments will be removed.",
-      confirmLabel: "Ban",
+      title: "Cấm người dùng",
+      message: "Cấm người dùng này? Tất cả bình luận của họ sẽ bị xóa.",
+      confirmLabel: "Cấm",
       variant: "danger",
       onConfirm: async () => {
         try {
@@ -66,10 +66,10 @@ export default function AdminLivePage() {
           });
           if (!res.ok) {
             const body = await res.json();
-            showAlert("Error", body.error ?? "Failed to ban", "danger");
+            showAlert("Lỗi", body.error ?? "Cấm thất bại", "danger");
           }
         } catch {
-          showAlert("Error", "Network error", "danger");
+          showAlert("Lỗi", "Lỗi mạng", "danger");
         }
         setConfirm((prev) => ({ ...prev, open: false }));
       },
@@ -79,17 +79,17 @@ export default function AdminLivePage() {
   const handleForceEnd = useCallback(() => {
     setConfirm({
       open: true,
-      title: "Force End Live",
+      title: "Kết thúc Live cưỡng chế",
       message: "Chắc chắn muốn cưỡng chế kết thúc Live bị kẹt trong Database?",
-      confirmLabel: "Force End",
+      confirmLabel: "Kết thúc",
       variant: "danger",
       onConfirm: async () => {
         try {
           const res = await fetch("/api/admin/force-end", { method: "POST" });
           if (!res.ok) throw new Error("Failed to end");
-          showAlert("Success", "Đã kết thúc Live thành công!", "success");
+          showAlert("Thành công", "Đã kết thúc Live thành công!", "success");
         } catch {
-          showAlert("Error", "Lỗi mạng hoặc Server từ chối", "danger");
+          showAlert("Lỗi", "Lỗi mạng hoặc Server từ chối", "danger");
         }
         setConfirm((prev) => ({ ...prev, open: false }));
       },
@@ -102,7 +102,7 @@ export default function AdminLivePage() {
       <div className="shrink-0 lg:flex-1 lg:min-w-0">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-white">Live Monitor</h2>
+            <h2 className="text-sm font-semibold text-white">Giám sát Live</h2>
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 text-xs font-medium">
                 {isLive ? (
@@ -114,21 +114,21 @@ export default function AdminLivePage() {
                     <span className="text-red-500 font-bold">LIVE</span>
                   </>
                 ) : (
-                  <span className="text-gray-500">OFFLINE</span>
+                  <span className="text-gray-500">NGOẠI TUYẾN</span>
                 )}
               </span>
               {isLive && (
                 <>
                   {viewerCount && (
                     <span className="text-xs text-gray-400">
-                      {viewerCount.nclients} viewer{viewerCount.nclients !== 1 ? "s" : ""}
+                      {viewerCount.nclients} người xem
                     </span>
                   )}
                   <button
                     onClick={handleForceEnd}
                     className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
                   >
-                    Force End
+                    Kết thúc ngay
                   </button>
                 </>
               )}
@@ -137,7 +137,7 @@ export default function AdminLivePage() {
           <LivePlayer ref={playerRef} hlsUrl={isLive ? hlsUrl : ""} />
           {session?.started_at && (
             <p className="text-xs text-gray-600 mt-2">
-              Started: {new Date(session.started_at).toLocaleTimeString()}
+              Bắt đầu: {new Date(session.started_at).toLocaleTimeString()}
             </p>
           )}
         </div>
@@ -147,14 +147,14 @@ export default function AdminLivePage() {
       <div className="flex-1 lg:flex-none lg:w-[400px] border-t lg:border-t-0 lg:border-l border-gray-800 flex flex-col min-h-0">
         <div className="shrink-0 px-4 py-3 border-b border-gray-800 flex items-center justify-between">
           <span className="text-sm font-semibold text-white">
-            Comments ({comments.length})
+            Bình luận ({comments.length})
           </span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0 chat-scrollbar">
           {comments.length === 0 && (
             <p className="text-xs text-gray-600 text-center mt-4">
-              No comments yet
+              Chưa có bình luận
             </p>
           )}
           {comments.map((c: Comment) => (
@@ -184,14 +184,14 @@ export default function AdminLivePage() {
                     className="border border-red-800 px-2 py-1 text-xs text-red-400 hover:bg-red-900/50 transition-colors"
                     onClick={() => handleDelete(c.id)}
                   >
-                    Delete
+                    Xóa
                   </button>
                   <button
                     type="button"
                     className="border border-yellow-800 px-2 py-1 text-xs text-yellow-400 hover:bg-yellow-900/50 transition-colors"
                     onClick={() => handleBan(c.id)}
                   >
-                    Ban
+                    Cấm
                   </button>
                 </div>
               </div>
