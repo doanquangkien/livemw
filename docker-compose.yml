@@ -19,6 +19,24 @@ services:
       - traefik.http.routers.hls.tls.certresolver=letsencrypt
       - traefik.http.services.hls.loadbalancer.server.port=8088
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_HLS_URL=https://live.mecwish.com/hls/testkey.m3u8
+    container_name: frontend
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`live.mecwish.com`)
+      - traefik.http.routers.frontend.entrypoints=https
+      - traefik.http.routers.frontend.tls=true
+      - traefik.http.routers.frontend.tls.certresolver=letsencrypt
+      - traefik.http.services.frontend.loadbalancer.server.port=3000
+
 volumes:
   hls-temp:
   nginx-logs:
