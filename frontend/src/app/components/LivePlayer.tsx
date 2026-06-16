@@ -183,16 +183,6 @@ export const LivePlayer = forwardRef<LivePlayerHandle, LivePlayerProps>(function
         controls={state === "playing"}
       />
 
-      {/* Fullscreen button overlay */}
-      <button
-        type="button"
-        className="absolute bottom-2 right-2 z-10 bg-black/60 border border-gray-600 p-1.5 hover:bg-black/80 transition-colors"
-        onClick={toggleFullscreen}
-        aria-label="Toggle fullscreen"
-      >
-        <FullscreenIcon />
-      </button>
-
       {state === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black">
           <Spinner />
