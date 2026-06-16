@@ -23,7 +23,7 @@ export default function LandingPage() {
           LiveMecwish
         </h1>
         <p className="text-sm text-gray-500 mb-10">
-          Nen tảng livestream tinh gọn cho moi người.
+          Nền tảng livestream tinh gọn cho mọi người.
         </p>
 
         {isLoading ? (
@@ -32,7 +32,7 @@ export default function LandingPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <span className="text-sm">Dang kiem tra...</span>
+            <span className="text-sm">Đang kiểm tra...</span>
           </div>
         ) : isLive ? (
           <a
@@ -40,16 +40,16 @@ export default function LandingPage() {
             className="inline-flex items-center gap-3 border border-red-500 px-8 py-4 text-base font-semibold text-red-500 hover:bg-red-500/10 transition-colors"
           >
             <LiveIndicator />
-            DANG CO PHIEN LIVE - BAM VAO DE XEM
+            ĐANG CÓ PHIÊN LIVE - BẤM VÀO ĐỂ XEM
           </a>
         ) : (
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 text-gray-600">
               <span className="block h-2 w-2 bg-gray-700" />
-              <span className="text-sm font-medium">Hien chua co phien live nao</span>
+              <span className="text-sm font-medium">Hiện chưa có phiên live nào</span>
             </div>
             <p className="text-xs text-gray-700">
-              Quay lai sau khi admin bat dau phien live.
+              Quay lại sau khi admin bắt đầu phiên live.
             </p>
           </div>
         )}
