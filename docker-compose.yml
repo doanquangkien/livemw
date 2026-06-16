@@ -14,8 +14,9 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.hls.rule=Host(`live.mecwish.com`) && PathPrefix(`/hls`)
-      - traefik.http.routers.hls.entrypoints=websecure
+      - traefik.http.routers.hls.entrypoints=https
       - traefik.http.routers.hls.tls=true
+      - traefik.http.routers.hls.tls.certresolver=letsencrypt
       - traefik.http.services.hls.loadbalancer.server.port=8088
 
 volumes:
