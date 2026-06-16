@@ -26,7 +26,7 @@ export async function POST() {
 
   const { error } = await supabase
     .from("live_sessions")
-    .update({ status: "ended", ended_at: new Date().toISOString() })
+    .update({ status: "ended", ended_at: new Date().toISOString(), ended_by: "admin" })
     .eq("status", "live");
 
   if (error) {

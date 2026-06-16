@@ -4,10 +4,18 @@ import { LivePlayer } from "../components/LivePlayer";
 import { LiveChat } from "../components/LiveChat";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
+import { useViewerPresence } from "@/hooks/useViewerPresence";
+import WaitingRoom from "../components/WaitingRoom";
 
 export default function LivePage() {
   const { status, session, hlsUrl } = useLiveStatus();
   const isLive = status === "live";
+  const { isWaitingRoom, viewerCount } = useViewerPresence(session?.id ?? null);
+
+  // Show waiting room when >= 200 CCU (only when live)
+  if (isLive && isWaitingRoom) {
+    return <WaitingRoom viewerCount={viewerCount} />;
+  }
 
   return (
     <main className="flex flex-col lg:flex-row h-dvh bg-black overflow-hidden">
