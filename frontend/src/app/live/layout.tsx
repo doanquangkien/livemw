@@ -16,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Livestream - Trại Gà Chúc Cát Tường",
       description: `Phiên live ngày ${formatted}`,
+      url: "https://live.mecwish.com/live",
+      type: "website",
       images: [
         {
           url: "/Cover.png",

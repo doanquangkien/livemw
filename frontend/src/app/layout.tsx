@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Livestream - Trại Gà Chúc Cát Tường",
   description: "Live stream viewer",
   openGraph: {
+    title: "Livestream - Trại Gà Chúc Cát Tường",
+    description: "Live stream viewer",
+    url: "https://live.mecwish.com",
+    type: "website",
     images: ["/Cover.png"],
   },
 };
