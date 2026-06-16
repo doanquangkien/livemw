@@ -6,9 +6,10 @@ FROM tiangolo/nginx-rtmp:latest
 RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY transcode.sh /usr/local/bin/transcode.sh
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && mkdir -p /tmp/hls
+RUN chmod +x /entrypoint.sh /usr/local/bin/transcode.sh && mkdir -p /tmp/hls
 
 EXPOSE 1935 8088
 
