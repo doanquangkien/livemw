@@ -16,7 +16,7 @@ export default function AboutTab() {
           <h2 className="text-lg font-bold text-white tracking-wide">TRẠI GÀ CHÚC CÁT TƯỜNG</h2>
         </div>
         <p className="text-sm text-gray-300 leading-relaxed text-justify">
-          Chào mừng anh em đam mê đến với nền tảng Livestream chính thức của <strong>Trại Gà Chúc Cát Tường</strong>. Đây là sân chơi chuyên biệt dành cho những người yêu thích nghệ thuật chăm sóc và vần xổ chiến kê. Nền tảng được xây dựng với mục đích duy nhất: Giao lưu, chia sẻ kinh nghiệm huấn luyện thực chiến và chiêm ngưỡng những pha ra đòn đẹp mắt.
+          Chào mừng anh em đam mê đến với trang web Livestream chính thức của <strong>Trại Gà Chúc Cát Tường</strong>. Đây là sân chơi chuyên biệt dành cho những người yêu thích nghệ thuật chăm sóc và vần xổ chiến kê. Trang web được xây dựng với mục đích duy nhất: Giao lưu, chia sẻ kinh nghiệm huấn luyện thực chiến và chiêm ngưỡng những pha ra đòn đẹp mắt.
         </p>
       </div>
 
