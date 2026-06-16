@@ -2436,17 +2436,21 @@ Nếu > 200 CCU liên tục nhiều giờ → thêm CDN để tránh overage
 - [x] FFmpeg transcoding hoãn: dùng built-in HLS (`hls on;`), RTMP Play + exec_publish FLV broken
 - [x] Coolify deploy API trigger hoạt động
 
-### Phase 2 — Viewer xem được ✅ MILESTONE
+### Phase 2 — Viewer xem được ✅ MILESTONE (2026-06-16)
 
-- [ ] Setup DNS `live.mecwish.com` → VPS IP
-- [ ] Coolify deploy **Next.js 16** frontend
-- [ ] SSL tự động qua Coolify (Let's Encrypt)
-- [ ] Proxy `/hls/` qua HTTPS (Traefik labels)
-- [ ] Tạo file `app/live/page.tsx` với LivePlayer component (Mục 11.2)
-- [ ] Set `NEXT_PUBLIC_HLS_URL` trong env
-- [ ] Deploy và test: `https://live.mecwish.com/live` load được
-- [ ] Larix đang stream → mở Chrome → thấy video live
-- [ ] Safari iOS → thấy video live
+- [x] Setup DNS `live.mecwish.com` → VPS IP (đã hoàn thành từ Phase 1)
+- [x] Coolify deploy **Next.js 16** frontend — container `frontend` up, port 3000
+- [x] SSL tự động qua Coolify (Let's Encrypt) — Traefik certresolver
+- [x] Proxy `/hls/` qua HTTPS (Traefik labels) — giữ nguyên từ Phase 1
+- [x] Tạo `app/page.tsx` (trang chủ `/`) + `components/LivePlayer.tsx` với HLS.js + Safari native fallback
+- [x] Set `NEXT_PUBLIC_HLS_URL` trong env + Docker build args
+- [x] Deploy và test: `https://live.mecwish.com/` load được, render HTML Next.js
+- [x] FFmpeg test stream → HLS playlist + TS segments accessible qua HTTPS
+- [x] Frontend hiển thị LivePlayer, kết nối tới HLS URL
+- [ ] Safari iOS → thấy video live (chờ user test)
+- [ ] Larix iPhone → stream thật, viewer xem qua browser (chờ user test)
+
+> **Kiến trúc Phase 2:** Trang viewer chính đặt tại `/` (root), không phải `/live`. Lý do: Phase 2 minimal — chưa có homepage riêng, chưa có auth. Khi thêm homepage ở Phase 3, có thể chuyển viewer qua `/live`.
 
 ### Phase 3 — Live Status Realtime
 
