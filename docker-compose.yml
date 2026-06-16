@@ -87,7 +87,7 @@ services:
   # Auto-cleanup cron — ngăn "No space left on device"
   # ============================================================
   cleanup:
-    image: alpine:3.21
+    image: alpine:latest
     container_name: cleanup-cron
     restart: always
     volumes:
