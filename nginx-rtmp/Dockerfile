@@ -5,8 +5,9 @@ FROM tiangolo/nginx-rtmp:latest
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
-RUN mkdir -p /tmp/hls && chown -R nginx:nginx /tmp/hls
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && mkdir -p /tmp/hls
 
 EXPOSE 1935 8088
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
