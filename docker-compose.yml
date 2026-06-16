@@ -25,14 +25,14 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_HLS_URL=https://live.mecwish.com/hls/testkey.m3u8
-        - NEXT_PUBLIC_SUPABASE_URL=https://lntpvqhkppdbgswlorgd.supabase.co
-        - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxudHB2cWhrcHBkYmdzd2xvcmdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NzIzNzMsImV4cCI6MjA5NzE0ODM3M30.c3wHWn1W1XJk10BBxOBDI7AYtsl7cNZ0JkeCfOE9k04
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     container_name: frontend
     restart: always
     ports:
       - "127.0.0.1:3000:3000"
     environment:
-      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxudHB2cWhrcHBkYmdzd2xvcmdkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTU3MjM3MywiZXhwIjoyMDk3MTQ4MzczfQ.Ry4mKN17SuE8D8CSK9NRN5t3UU_iEURVljpydV7iqqw
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`live.mecwish.com`)
