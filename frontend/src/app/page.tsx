@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
 import VodList from "@/app/components/VodList";
+import AboutTab from "@/app/components/AboutTab";
 
 type Tab = "about" | "replays";
 
@@ -149,20 +150,7 @@ export default function LandingPage() {
         {/* Tab content */}
         <div className="min-h-[200px] py-4">
           {tab === "about" ? (
-            <div className="text-sm text-gray-400 leading-relaxed space-y-3">
-              <p>
-                LiveMecwish là nền tảng livestream tinh gọn, được xây dựng dành cho mọi người —
-                từ những buổi phát trực tiếp đời thường đến các sự kiện cộng đồng.
-              </p>
-              <p>
-                Với giao diện đơn giản và tốc độ ổn định, bạn có thể dễ dàng theo dõi
-                các phiên live từ bất kỳ thiết bị nào — điện thoại, máy tính bảng hay máy tính.
-              </p>
-              <p>
-                Hãy quay lại thường xuyên để không bỏ lỡ những phiên live đặc biệt
-                và xem lại các video đã phát trong mục <span className="text-white font-medium">Xem lại</span>.
-              </p>
-            </div>
+            <AboutTab />
           ) : (
             <VodList />
           )}
