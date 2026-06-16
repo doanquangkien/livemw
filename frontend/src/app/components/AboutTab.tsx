@@ -2,9 +2,9 @@ export default function AboutTab() {
   return (
     <div className="space-y-6">
       {/* Intro Section */}
-      <div className="bg-gray-900 border border-gray-800 p-5 rounded-lg shadow-lg">
+      <div className="bg-gray-900 border border-gray-800 p-5 shadow-lg">
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-red-500/10 rounded-md">
+          <div className="p-2 bg-red-500/10">
             <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -17,7 +17,7 @@ export default function AboutTab() {
       </div>
 
       {/* Warning Section */}
-      <div className="bg-red-950/20 border border-red-900/50 p-5 rounded-lg relative overflow-hidden">
+      <div className="bg-red-950/20 border border-red-900/50 p-5 relative overflow-hidden">
         {/* Accent border line */}
         <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
         
@@ -41,8 +41,8 @@ export default function AboutTab() {
       </div>
 
       {/* Footer Info */}
-      <div className="flex items-start gap-4 p-4 border border-gray-800 bg-gray-900/40 rounded-lg">
-        <div className="p-2 bg-gray-800 rounded-full shrink-0">
+      <div className="flex items-start gap-4 p-4 border border-gray-800 bg-gray-900/40">
+        <div className="p-2 bg-gray-800 shrink-0">
           <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
