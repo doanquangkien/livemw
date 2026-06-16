@@ -233,7 +233,8 @@ useEffect(() => {
 
 ### Route Structure
 ```
-/                    → Viewer page (YouTube Mobile: video + chat)
+/                    → Landing Page (kiểm tra live_sessions, nút ĐANG LIVE nếu có)
+/live                → Viewer page (YouTube Mobile: video + chat)
 /admin               → Admin Dashboard overview
 /admin/login         → Admin login (password form)
 /admin/live          → Live Control (video monitor + comment moderation)

@@ -1438,10 +1438,6 @@ export function LivePlayer({ hlsUrl, autoPlay = true }: LivePlayerProps) {
 /api/comments/ban      → POST ban IP + bulk delete (admin, cookie auth)
 /api/admin/login       → POST verify password, set httpOnly cookie
 ```
-/api/comments/[id]     → DELETE (admin)
-/api/sessions          → GET current, POST create
-/api/sessions/[id]/end → POST force-end session
-```
 
 ---
 
