@@ -84,6 +84,19 @@ services:
       - NETDATA_LISTENER_PORT=19999
 
   # ============================================================
+  # VOD Recorder — Isolated RTMP subscriber, ghi hình độc lập
+  # KHÔNG phụ thuộc vào nginx-rtmp, crash không ảnh hưởng live stream
+  # ============================================================
+  vod-recorder:
+    build:
+      context: ./vod-recorder
+      dockerfile: Dockerfile
+    container_name: vod-recorder
+    restart: always
+    volumes:
+      - vod-data:/tmp/vod
+
+  # ============================================================
   # Auto-cleanup cron — ngăn "No space left on device"
   # ============================================================
   cleanup:
@@ -101,6 +114,7 @@ services:
         crond -f -l 2
 
 volumes:
+  vod-data:
   hls-temp:
   nginx-logs:
   uptime-kuma-data:
