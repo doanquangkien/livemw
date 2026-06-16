@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 
 const BOT_AGENTS = [
   "facebookexternalhit",
-  "zalo",
   "twitterbot",
   "googlebot",
   "bingbot",
