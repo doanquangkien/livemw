@@ -4,7 +4,7 @@ tags: ["#infrastructure", "#config", "#entry-point"]
 **Version:** 2.0 — Cập nhật phiên bản stack tháng 06/2026  
 **Ngày:** 16/06/2026  
 **Domain:** `live.mecwish.com` *(hoặc domain bạn chọn)*  
-**Stack chính:** Nginx-RTMP · Node.js/Express API · Next.js 16 · HLS.js · Supabase · Hetzner VPS · Coolify  
+**Stack chính:** Nginx-RTMP · Node.js/Express API · Next.js 16 · HLS.js · Supabase · Google Cloud VM (Cloud-Agnostic) · Coolify  
 **Mục tiêu bất biến:** Admin phát RTMP từ Larix/OBS Mobile → Nginx-RTMP nhận → HLS → Trang chủ viewer xem được ngay
 
 > ⚠️ **TẠI SAO REFACTOR?**  
@@ -137,17 +137,17 @@ VIEWER FLOW:
 
 ## 2. Hạ tầng & VPS Sizing
 
-### 2.1 Khuyến nghị — Hetzner (chi phí thấp, hiệu năng tốt)
+### 2.1 Khuyến nghị — Cloud-Agnostic Sizing (Ví dụ: Google Cloud VM)
 
-| Stage | Model | vCPU | RAM | Giá (~€/tháng) | Dùng khi |
-|-------|-------|------|-----|----------------|---------|
-| Dev/Test | CX22 | 2 | 4 GB | ~€3.79 | Phase 0–1 |
-| **MVP (khuyến nghị)** | **CX32** | **4** | **8 GB** | **~€6.80** | **Phase 2–4** |
-| Production (>200 CCU) | CX42 | 8 | 16 GB | ~€16.40 | Phase 5+ |
+Hệ thống được thiết kế hoàn toàn **Cloud-Agnostic**, có thể deploy trên bất kỳ VPS nào (GCP, AWS, DigitalOcean) miễn là đáp ứng cấu hình tối thiểu và chạy được Docker.
 
-> **Bắt đầu với CX32.** Nginx-RTMP + Transcode + Node.js API + Next.js thoải mái trên 4 vCPU, 8 GB RAM cho 50–500 viewers.
->
-> **Lưu ý 06/2026:** Hetzner đang chuyển sang generation-based naming (CX Gen3). CX32/CX42 vẫn khả dụng tại datacenter EU với giá không đổi. Nếu bạn thấy tên mới như **CPX21/CPX31** trên console, đây là dòng Regular Performance (AMD EPYC) — tốt hơn cho workload CPU-bound như FFmpeg transcode, giá tương đương.
+| Stage | Yêu cầu cấu hình tối thiểu | Ví dụ GCP Instance | Giá ước tính | Dùng khi |
+|-------|-------|------|-----|---------|
+| Dev/Test | 2 vCPU, 4 GB RAM | e2-medium | Tùy chọn | Phase 0–1 |
+| **MVP (khuyến nghị)** | **4 vCPU, 8 GB RAM** | **e2-standard-2** | **Tùy chọn** | **Phase 2–4** |
+| Production (>200 CCU) | 8 vCPU, 16 GB RAM | e2-standard-4 | Tùy chọn | Phase 5+ |
+
+> **Bắt đầu với MVP (4 vCPU, 8 GB RAM).** Nginx-RTMP + Transcode + Node.js API + Next.js thoải mái hoạt động cho 50–500 viewers. CPU-bound chính là tiến trình FFmpeg transcoding, do đó ưu tiên các dòng instance có compute tốt.
 
 ### 2.2 OS & Software
 
@@ -169,7 +169,7 @@ FFmpeg:   8.x     (stable 8.1.1 tháng 05/2026)
 - Port **1935/TCP** mở cho RTMP ingest từ iPhone
 - Port **8080/TCP** nội bộ cho Nginx HTTP (Coolify proxy ra ngoài qua 443)
 - Băng thông upload VPS: ít nhất **50 Mbps**
-- Hetzner CX32: 20 TB/tháng traffic — quá đủ cho 500 CCU
+- Băng thông: Băng thông ra (Egress) đủ lớn tùy theo lượng viewer (Video Streaming có thể tốn traffic nhanh chóng).
 
 ### 2.4 DNS Setup
 
@@ -447,8 +447,8 @@ Cuối Phase 0, bạn có thể:
 ### Bước thực hiện
 
 ```bash
-# Bước 1: Tạo VPS Hetzner CX32, cài Docker
-# (Hetzner console → Cloud → Add Server → Ubuntu 24.04 → CX32)
+# Bước 1: Tạo VPS Google Cloud VM (e2-standard-2), cài Docker
+# (Đảm bảo OS là Ubuntu 24.04 LTS và mở sẵn port SSH)
 
 # Bước 2: SSH vào VPS
 ssh root@VPS_IP
